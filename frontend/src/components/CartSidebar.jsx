@@ -1,13 +1,23 @@
-import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 export default function CartSidebar() {
-  const { items, isOpen, setIsOpen, increment, decrement, removeFromCart, totalItems, totalPrice } =
+  const { items, isOpen, setIsOpen, increment, decrement, removeFromCart, totalItems, totalPrice, toast } =
     useCart();
 
   return (
     <>
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] animate-fade-in-down">
+          <div className="flex items-center gap-2 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium">
+            <CheckCircle2 size={16} className="text-green-400 shrink-0" />
+            {toast}
+          </div>
+        </div>
+      )}
+
       {/* Backdrop */}
       {isOpen && (
         <div
@@ -142,9 +152,13 @@ export default function CartSidebar() {
             <p className="text-xs text-gray-400">
               Shipping and taxes calculated at checkout.
             </p>
-            <button className="btn-primary w-full py-3 text-center rounded-full">
+            <Link
+              to="/checkout"
+              onClick={() => setIsOpen(false)}
+              className="btn-primary w-full py-3 text-center rounded-full block"
+            >
               Checkout → ${totalPrice.toFixed(2)}
-            </button>
+            </Link>
             <button
               onClick={() => setIsOpen(false)}
               className="btn-outline w-full py-3 text-center"

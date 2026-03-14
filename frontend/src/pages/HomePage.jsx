@@ -38,7 +38,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* ── Hero ──────────────────────────────────────────────────────── */}
-        <section className="text-center px-4 pt-14 pb-10">
+        <section className="text-center px-4 pt-14 pb-10 animate-fade-up">
           <p className="text-xs font-medium tracking-[0.2em] uppercase text-gray-400 mb-5">
             Thoughtfully Curated
           </p>
@@ -63,7 +63,7 @@ export default function HomePage() {
         </section>
 
         {/* ── Category Filter + Grid ─────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 animate-fade-up animate-delay-2">
           {error && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
               Không thể tải dữ liệu. Kiểm tra backend đã chạy chưa (docker compose up).
@@ -117,7 +117,7 @@ export default function HomePage() {
         </section>
 
         {/* ── Editorial Picks Banner ─────────────────────────────────── */}
-        <section className="border-t border-gray-200 bg-white">
+        <section className="border-t border-gray-200 bg-white animate-fade-up animate-delay-3">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="flex items-center justify-between mb-8">
               <h2 className="font-serif text-2xl font-medium">
@@ -170,7 +170,7 @@ export default function HomePage() {
         </section>
 
         {/* ── All Categories Strip ───────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-up animate-delay-4">
           <h2 className="font-serif text-2xl font-medium mb-8">
             Browse by Category
           </h2>
@@ -195,7 +195,7 @@ export default function HomePage() {
         </section>
 
         {/* ── Newsletter ─────────────────────────────────────────────── */}
-        <section className="bg-gray-950 text-white">
+        <section className="bg-gray-950 text-white animate-fade-up animate-delay-5">
           <div className="max-w-2xl mx-auto px-4 py-20 text-center">
             <p className="text-xs tracking-widest uppercase text-gray-500 mb-4">
               Newsletter

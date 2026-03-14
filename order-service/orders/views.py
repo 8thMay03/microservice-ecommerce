@@ -34,16 +34,27 @@ class OrderListView(APIView):
         data = serializer.validated_data
         customer_id = data["customer_id"]
 
-        # 1. Fetch cart snapshot
-        try:
-            cart = CartServiceClient.get_cart(customer_id)
-        except Exception:
-            return Response(
-                {"error": "Could not reach cart-service. Try again later."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
+        # If items are passed directly, use them; otherwise fetch from cart-service
+        if "items" in data and data["items"]:
+            cart_items = [
+                {
+                    "book_id": it["book_id"],
+                    "book_title": it.get("book_title", f"Book #{it['book_id']}"),
+                    "quantity": it["quantity"],
+                    "unit_price": it["unit_price"],
+                }
+                for it in data["items"]
+            ]
+        else:
+            try:
+                cart = CartServiceClient.get_cart(customer_id)
+            except Exception:
+                return Response(
+                    {"error": "Could not reach cart-service. Try again later."},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+            cart_items = cart.get("items", [])
 
-        cart_items = cart.get("items", [])
         if not cart_items:
             return Response({"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,7 +64,6 @@ class OrderListView(APIView):
         )
 
         with transaction.atomic():
-            # 2. Create order record
             order = Order.objects.create(
                 customer_id=customer_id,
                 total_amount=total_amount,
@@ -116,8 +126,16 @@ class OrderListView(APIView):
 
 
 class OrderDetailView(APIView):
-    """GET /api/orders/<id>/"""
+    """GET/PUT /api/orders/<id>/"""
 
     def get(self, request, pk):
         order = get_object_or_404(Order.objects.prefetch_related("items"), pk=pk)
+        return Response(OrderSerializer(order).data)
+
+    def put(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        new_status = request.data.get("status")
+        if new_status and new_status in dict(Order.Status.choices):
+            order.status = new_status
+            order.save()
         return Response(OrderSerializer(order).data)

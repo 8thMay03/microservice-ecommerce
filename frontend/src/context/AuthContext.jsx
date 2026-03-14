@@ -33,45 +33,28 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
+      // Try customer first
       const data = await authApi.login(email, password);
       _persist(data.tokens.access, { ...data.customer, role: "customer" });
       return { ok: true };
-    } catch (err) {
-      const msg = err.message || "Login failed. Please try again.";
-      setError(msg);
-      return { ok: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loginAsAdmin = useCallback(async (email, password) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await authApi.loginManager(email, password);
-      _persist(data.tokens.access, { ...data.manager, role: "manager" });
-      return { ok: true };
-    } catch (err) {
-      const msg = err.message || "Invalid admin credentials.";
-      setError(msg);
-      return { ok: false, error: msg };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loginAsStaff = useCallback(async (email, password) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await authApi.loginStaff(email, password);
-      _persist(data.tokens.access, { ...data.staff, role: "staff" });
-      return { ok: true };
-    } catch (err) {
-      const msg = err.message || "Invalid staff credentials.";
-      setError(msg);
-      return { ok: false, error: msg };
+    } catch {
+      // Try manager
+      try {
+        const data = await authApi.loginManager(email, password);
+        _persist(data.tokens.access, { ...data.manager, role: "manager" });
+        return { ok: true };
+      } catch {
+        // Try staff
+        try {
+          const data = await authApi.loginStaff(email, password);
+          _persist(data.tokens.access, { ...data.staff, role: "staff" });
+          return { ok: true };
+        } catch (err) {
+          const msg = err.message || "Invalid email or password.";
+          setError(msg);
+          return { ok: false, error: msg };
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -93,6 +76,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const updateUser = useCallback((updatedFields) => {
+    setAuth((prev) => {
+      const merged = { ...prev.user, ...updatedFields };
+      localStorage.setItem(USER_KEY, JSON.stringify(merged));
+      return { ...prev, user: merged };
+    });
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -109,10 +100,9 @@ export function AuthProvider({ children }) {
         error,
         clearError,
         login,
-        loginAsAdmin,
-        loginAsStaff,
         register,
         logout,
+        updateUser,
       }}
     >
       {children}

@@ -23,6 +23,21 @@ async function request(url, options = {}) {
   return data;
 }
 
+function authRequest(url, options = {}, token = null) {
+  const headers = { "Content-Type": "application/json", ...options.headers };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return request(url, { ...options, headers });
+}
+
+export const profileApi = {
+  get: (token) => authRequest(`${BASE}/profile/`, {}, token),
+  update: (data, token) =>
+    authRequest(`${BASE}/profile/`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }, token),
+};
+
 export const authApi = {
   login: (email, password) =>
     request(`${BASE}/login/`, {

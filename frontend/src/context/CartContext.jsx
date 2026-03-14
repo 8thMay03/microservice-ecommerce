@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useState, useEffect } from "react";
+import { createContext, useContext, useReducer, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 
 const CartContext = createContext(null);
@@ -65,6 +65,8 @@ export function CartProvider({ children }) {
 
   const [items, dispatch] = useReducer(cartReducer, []);
   const [isOpen, setIsOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
 
   // Load cart when user changes (login/logout)
   useEffect(() => {
@@ -77,9 +79,15 @@ export function CartProvider({ children }) {
     saveCartToStorage(cartKey, items);
   }, [cartKey, items]);
 
+  const showToast = useCallback((message) => {
+    setToast(message);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2000);
+  }, []);
+
   const addToCart = (book) => {
     dispatch({ type: "ADD", book });
-    setIsOpen(true);
+    showToast("Đã thêm vào giỏ hàng");
   };
 
   const removeFromCart = (id) => dispatch({ type: "REMOVE", id });
@@ -103,6 +111,7 @@ export function CartProvider({ children }) {
         clearCart,
         totalItems,
         totalPrice,
+        toast,
       }}
     >
       {children}

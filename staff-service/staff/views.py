@@ -55,7 +55,8 @@ class StaffLoginView(APIView):
 
 
 class StaffListView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     def get(self, request):
         members = StaffMember.objects.filter(is_active=True)
@@ -63,7 +64,8 @@ class StaffListView(APIView):
 
 
 class StaffDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     def get(self, request, pk):
         member = get_object_or_404(StaffMember, pk=pk)

@@ -133,7 +133,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex animate-fade-up">
       {/* ── Left panel ────────────────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-gray-950 flex-col justify-between p-12 relative overflow-hidden">
         <div

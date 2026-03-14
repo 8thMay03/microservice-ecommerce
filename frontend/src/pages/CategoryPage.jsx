@@ -90,7 +90,7 @@ export default function CategoryPage() {
       <Navbar />
 
       <main className="flex-1">
-        <div className="border-b border-gray-200 bg-white">
+        <div className="border-b border-gray-200 bg-white animate-fade-up">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <nav className="flex items-center gap-2 text-xs text-gray-400 mb-4">
               <Link to="/" className="hover:text-gray-600 transition-colors">Home</Link>
@@ -118,7 +118,7 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-up animate-delay-2">
           <div className="flex flex-wrap items-center gap-3 mb-8">
             <form onSubmit={handleSearchSubmit} className="flex items-center bg-white border border-gray-200 rounded-full px-4 py-2 gap-2 min-w-0 w-full sm:w-auto sm:flex-1 max-w-xs">
               <Search size={14} className="text-gray-400 shrink-0" />

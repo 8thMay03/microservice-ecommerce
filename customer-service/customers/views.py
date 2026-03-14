@@ -87,10 +87,35 @@ class ProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class CustomerListView(APIView):
+    """GET /api/customers/ — list all customers (admin use)."""
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        qs = Customer.objects.all().order_by("-created_at")
+        return Response(CustomerSerializer(qs, many=True).data)
+
+
 class CustomerDetailView(APIView):
     """GET /api/customers/<id>/ — fetch customer by ID (admin / internal use)."""
-    permission_classes = [IsAuthenticated]
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     def get(self, request, pk):
         customer = get_object_or_404(Customer, pk=pk)
         return Response(CustomerSerializer(customer).data)
+
+    def put(self, request, pk):
+        customer = get_object_or_404(Customer, pk=pk)
+        serializer = CustomerUpdateSerializer(customer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(CustomerSerializer(customer).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        customer = get_object_or_404(Customer, pk=pk)
+        customer.is_active = False
+        customer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
