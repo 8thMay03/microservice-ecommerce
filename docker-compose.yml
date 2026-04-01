@@ -17,6 +17,7 @@ volumes:
   staff_db_data:
   manager_db_data:
 
+
 services:
   # ─────────────────────────────────────────────
   #  DATABASES
@@ -336,6 +337,14 @@ services:
       - bookstore-network
     restart: unless-stopped
 
+  rag-service:
+    build: ./rag-service
+    environment:
+      GOOGLE_API_KEY: "AIzaSyDhE_hNTq_mEqHeEIryUTX9htnbNiThVKs"
+    networks:
+      - bookstore-network
+    restart: unless-stopped
+
   # ─────────────────────────────────────────────
   #  FRONTEND  (React + Vite → nginx)
   # ─────────────────────────────────────────────
@@ -367,6 +376,7 @@ services:
       RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000"
       STAFF_SERVICE_URL: "http://staff-service:8000"
       MANAGER_SERVICE_URL: "http://manager-service:8000"
+      RAG_SERVICE_URL: "http://rag-service:8000"
     depends_on:
       - customer-service
       - book-service
@@ -379,6 +389,7 @@ services:
       - recommender-ai-service
       - staff-service
       - manager-service
+      - rag-service
     networks:
       - bookstore-network
     restart: unless-stopped

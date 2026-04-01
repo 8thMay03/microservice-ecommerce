@@ -16,6 +16,7 @@ import AdminRevenuePage from "./pages/AdminRevenuePage";
 import AdminStaffPage from "./pages/AdminStaffPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import ChatWidget from "./components/ChatWidget";
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
                     <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
           </Routes>
         </PageTransition>
+        <ChatWidget />
       </CartProvider>
     </AuthProvider>
   );
