@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from decouple import config
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-recommender-dev-key")
 DEBUG = config("DEBUG", default=True, cast=bool)
@@ -73,3 +77,12 @@ BOOK_SERVICE_URL = config("BOOK_SERVICE_URL", default="http://book-service:8000"
 COMMENT_RATE_SERVICE_URL = config(
     "COMMENT_RATE_SERVICE_URL", default="http://comment-rate-service:8000"
 )
+
+# Deep learning behavior model (Neural CF checkpoint)
+BEHAVIOR_MODEL_PATH = config(
+    "BEHAVIOR_MODEL_PATH",
+    default=str(BASE_DIR / "recommender" / "weights" / "behavior_model.pt"),
+)
+BEHAVIOR_DL_ENABLED = config("BEHAVIOR_DL_ENABLED", default=True, cast=bool)
+# cpu | cuda | cuda:0 | mps | auto (CUDA then MPS then CPU)
+BEHAVIOR_TORCH_DEVICE = config("BEHAVIOR_TORCH_DEVICE", default="auto")

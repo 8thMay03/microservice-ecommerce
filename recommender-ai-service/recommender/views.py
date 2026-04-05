@@ -17,8 +17,8 @@ class RecommendationView(APIView):
     GET /api/recommendations/<customer_id>/
 
     Returns a ranked list of recommended books for a customer.
-    Uses collaborative filtering; falls back to popularity-based when
-    the customer has insufficient purchase history.
+    Uses behavior_dl (Neural CF) when a trained checkpoint exists; otherwise
+    collaborative filtering; then popularity for cold users.
     """
 
     def get(self, request, customer_id):
@@ -52,12 +52,17 @@ class RecommendationView(APIView):
                 })
 
         # Compute fresh recommendations
-        recs = get_recommendations(customer_id, limit)
+        recs, strategy = get_recommendations(customer_id, limit)
 
         # Persist
         RecommendationCache.objects.filter(customer_id=customer_id).delete()
         RecommendationCache.objects.bulk_create([
-            RecommendationCache(customer_id=customer_id, book_id=book_id, score=score)
+            RecommendationCache(
+                customer_id=customer_id,
+                book_id=book_id,
+                score=score,
+                strategy=strategy,
+            )
             for book_id, score in recs
         ])
 
@@ -77,7 +82,7 @@ class RecommendationView(APIView):
 
         return Response({
             "customer_id": customer_id,
-            "strategy": "collaborative_filtering",
+            "strategy": strategy,
             "recommendations": results,
         })
 

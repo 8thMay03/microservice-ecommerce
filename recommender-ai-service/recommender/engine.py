@@ -11,7 +11,7 @@ Strategy 2 — Popularity Fallback:
 """
 import logging
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import requests
 from django.conf import settings
@@ -166,6 +166,41 @@ def _apply_category_preference(
     return [(bid, s / max_score) for bid, s in boosted]
 
 
+def _deep_learning_recommendations(
+    customer_id: int, limit: int
+) -> Optional[List[Tuple[int, float]]]:
+    """
+    Neural CF (model_behavior) over completed orders; None if no checkpoint
+    or user/book out of vocabulary.
+    """
+    from . import model_behavior as mb
+
+    purchased: Set[int] = set()
+    for order in _fetch_customer_orders(customer_id):
+        for item in order.get("items", []):
+            purchased.add(item["book_id"])
+
+    pool = max(limit * 5, 20)
+    raw = mb.recommend_from_behavior_model(customer_id, purchased, pool)
+    if not raw:
+        return None
+
+    max_score = max(s for _, s in raw) or 1.0
+    normalized = [(book_id, s / max_score) for book_id, s in raw]
+
+    all_orders = _fetch_all_orders()
+    customer_books: dict = defaultdict(set)
+    for order in all_orders:
+        cid = order.get("customer_id")
+        for item in order.get("items", []):
+            customer_books[cid].add(item["book_id"])
+
+    boosted = _apply_rating_boost(normalized)
+    boosted = _apply_category_preference(customer_id, boosted, customer_books)
+    boosted.sort(key=lambda x: x[1], reverse=True)
+    return boosted[:limit]
+
+
 def popularity_based(limit: int = 10) -> List[Tuple[int, float]]:
     """Return (book_id, score) tuples ranked by purchase frequency, boosted by rating."""
     orders = _fetch_all_orders()
@@ -246,11 +281,21 @@ def collaborative_filtering(customer_id: int, limit: int = 10) -> List[Tuple[int
     return boosted
 
 
-def get_recommendations(customer_id: int, limit: int = 10) -> List[Tuple[int, float]]:
+def get_recommendations(
+    customer_id: int, limit: int = 10
+) -> Tuple[List[Tuple[int, float]], str]:
+    """
+    Prefer trained behavior_dl checkpoint when available; else collaborative
+    filtering; else popularity. Returns (ranked list, strategy name).
+    """
+    dl = _deep_learning_recommendations(customer_id, limit)
+    if dl:
+        return dl, "behavior_dl"
+
     results = collaborative_filtering(customer_id, limit)
     if not results:
-        results = popularity_based(limit)
-    return results
+        return popularity_based(limit), "popularity"
+    return results, "collaborative_filtering"
 
 
 def item_based_similar(book_id: int, limit: int = 10) -> List[Tuple[int, float]]:

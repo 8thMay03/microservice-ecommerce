@@ -7,3 +7,7 @@ requests==2.31.0
 django-cors-headers==4.3.1
 numpy==1.26.2
 scikit-learn==1.3.2
+# CPU build by default. For NVIDIA GPU after pip install -r requirements.txt:
+#   pip uninstall -y torch
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+torch>=2.2.0

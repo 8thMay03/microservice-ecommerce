@@ -14,6 +14,7 @@ volumes:
   ship_db_data:
   comment_rate_db_data:
   recommender_db_data:
+  recommender_behavior_weights:
   staff_db_data:
   manager_db_data:
 
@@ -295,6 +296,11 @@ services:
       ORDER_SERVICE_URL: "http://order-service:8000"
       BOOK_SERVICE_URL: "http://book-service:8000"
       COMMENT_RATE_SERVICE_URL: "http://comment-rate-service:8000"
+      BEHAVIOR_MODEL_PATH: "/app/recommender/weights/behavior_model.pt"
+      BEHAVIOR_DL_ENABLED: "True"
+      BEHAVIOR_TORCH_DEVICE: "auto"
+    volumes:
+      - recommender_behavior_weights:/app/recommender/weights
     depends_on:
       - recommender-db
     networks:
