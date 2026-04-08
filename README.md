@@ -1,5 +1,232 @@
 # Microservice BookStore
 
+Hệ thống bookstore theo kiến trúc microservice, chạy bằng Docker Compose, gồm:
+- `frontend` (React + Vite, serve qua Nginx)
+- `api-gateway` (Django DRF reverse proxy)
+- 12 backend services độc lập (mỗi service sở hữu DB riêng, trừ `rag-service`)
+
+## 1) Tổng quan kiến trúc
+
+```text
+Client (Browser)
+  -> Frontend: http://localhost:3000
+  -> API Gateway: http://localhost:8000
+       /api/<service>/<path>
+       |-> customer-service
+       |-> book-service
+       |-> catalog-service
+       |-> cart-service
+       |-> order-service
+       |-> pay-service
+       |-> ship-service
+       |-> comment-rate-service
+       |-> recommender-ai-service
+       |-> staff-service
+       |-> manager-service
+       |-> rag-service
+```
+
+Gateway forward request theo rule:
+- Client gọi: `/api/<service>/<path>`
+- Gateway forward tới: `<SERVICE_URL>/api/<service>/<path>`
+
+---
+
+## 2) Danh sách services trong hệ thống
+
+### Service công khai cổng ra host
+
+| Service | Port host | Mô tả |
+|---|---:|---|
+| `frontend` | `3000` | UI người dùng |
+| `api-gateway` | `8000` | API entrypoint duy nhất |
+
+### Service nội bộ (chạy trong Docker network)
+
+| Service | Vai trò chính | DB riêng |
+|---|---|---|
+| `customer-service` | Quản lý khách hàng, auth khách hàng | `customer-db` |
+| `book-service` | Sách + tồn kho | `book-db` |
+| `catalog-service` | Danh mục sách | `catalog-db` |
+| `cart-service` | Giỏ hàng | `cart-db` |
+| `order-service` | Đơn hàng, điều phối payment + shipment | `order-db` |
+| `pay-service` | Thanh toán | `pay-db` |
+| `ship-service` | Vận chuyển, tracking | `ship-db` |
+| `comment-rate-service` | Đánh giá + bình luận | `comment-rate-db` |
+| `recommender-ai-service` | Gợi ý sách (behavior + rating signal) | `recommender-db` |
+| `staff-service` | Nhân viên, nghiệp vụ kho | `staff-db` |
+| `manager-service` | Quản trị, báo cáo tổng hợp | `manager-db` |
+| `rag-service` | Chat RAG tư vấn sách | Không dùng PostgreSQL riêng |
+
+---
+
+## 3) Luồng nghiệp vụ chính
+
+- **Đăng ký khách hàng**: `customer-service` có thể khởi tạo cart mặc định qua `cart-service`.
+- **Tạo đơn hàng**: `order-service` gọi `cart-service` lấy item, gọi `pay-service` xử lý thanh toán, gọi `ship-service` tạo vận chuyển, sau đó clear cart.
+- **Gợi ý sách**: `recommender-ai-service` lấy lịch sử mua từ `order-service`, kết hợp tín hiệu rating từ `comment-rate-service`.
+- **RAG chat**: Frontend gọi `api-gateway` tới `/api/rag/chat` để nhận trả lời từ `rag-service`.
+
+---
+
+## 4) Quick Start
+
+### Yêu cầu
+
+- Docker Desktop (Docker + Compose v2)
+- (Tuỳ chọn) Python 3.10+ để chạy script seed ngoài container
+
+### Chạy toàn bộ hệ thống
+
+```bash
+docker compose up --build
+```
+
+Sau khi chạy:
+- Frontend: `http://localhost:3000`
+- API Gateway: `http://localhost:8000`
+- Health check: `http://localhost:8000/health/`
+
+### Dừng hệ thống
+
+```bash
+docker compose down
+```
+
+Xoá luôn volume DB:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## 5) Seed dữ liệu mẫu
+
+Từ thư mục gốc project:
+
+```bash
+python scripts/seed_data.py
+```
+
+Script sẽ tạo:
+- 7 categories
+- 10 books mẫu
+- tài khoản admin/staff
+- 10 customer mẫu
+
+Tham khảo thêm: `scripts/README.md`
+
+---
+
+## 6) API entrypoint (qua gateway)
+
+Tất cả API đi qua gateway `http://localhost:8000` với format:
+
+```text
+/api/<service>/<path>
+```
+
+Một số nhóm endpoint thường dùng:
+
+| Nhóm | Prefix |
+|---|---|
+| Customers | `/api/customers/` |
+| Books | `/api/books/` |
+| Catalog | `/api/catalog/` |
+| Cart | `/api/cart/` |
+| Orders | `/api/orders/` |
+| Payments | `/api/payments/` |
+| Shipments | `/api/shipments/` |
+| Reviews | `/api/reviews/` |
+| Recommendations | `/api/recommendations/` |
+| Staff | `/api/staff/` |
+| Managers | `/api/managers/` |
+| RAG Chat | `/api/rag/chat` |
+
+Ví dụ health:
+
+```bash
+curl http://localhost:8000/health/
+```
+
+Ví dụ chat RAG:
+
+```bash
+curl -X POST http://localhost:8000/api/rag/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"message\":\"Gợi ý cho tôi vài sách clean architecture\"}"
+```
+
+---
+
+## 7) Cấu trúc thư mục
+
+```text
+microservice-bookstore/
+├── docker-compose.yml
+├── README.md
+├── frontend/
+├── api-gateway/
+├── customer-service/
+├── book-service/
+├── catalog-service/
+├── cart-service/
+├── order-service/
+├── pay-service/
+├── ship-service/
+├── comment-rate-service/
+├── recommender-ai-service/
+├── staff-service/
+├── manager-service/
+├── rag-service/
+└── scripts/
+```
+
+---
+
+## 8) Biến môi trường quan trọng
+
+Phần lớn service sử dụng:
+- `DEBUG`
+- `SECRET_KEY`
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`
+- `*_SERVICE_URL` để gọi service khác
+
+Riêng `rag-service` cần:
+- `GOOGLE_API_KEY`
+
+Khuyến nghị:
+- Không hardcode key thật trong `docker-compose.yml`.
+- Dùng `.env` hoặc secret manager ở môi trường production.
+
+---
+
+## 9) Troubleshooting nhanh
+
+- `gateway` báo `503`:
+  - Kiểm tra service đích đã up chưa: `docker compose ps`
+  - Xem log: `docker compose logs -f api-gateway <service-name>`
+- Frontend không gọi được API:
+  - Kiểm tra gateway đang nghe cổng `8000`
+  - Kiểm tra prefix API trên frontend là `/api/...`
+- DB migration lỗi:
+  - Kiểm tra container DB tương ứng đã healthy
+  - Chạy lại `docker compose up --build`
+
+---
+
+## 10) Production checklist (rút gọn)
+
+- Tắt debug (`DEBUG=False`)
+- Thay toàn bộ secret/key mặc định
+- Giới hạn CORS theo domain cụ thể
+- Thêm auth nội bộ service-to-service
+- Bổ sung logging + tracing tập trung
+- Thiết lập CI/CD + backup DB
+
+# Microservice BookStore
+
 A production-ready, fully Dockerized BookStore system built with **Django REST Framework**, following clean microservice architecture principles. Each service owns its data, communicates over HTTP REST, and is deployed as an independent container.
 
 ---
