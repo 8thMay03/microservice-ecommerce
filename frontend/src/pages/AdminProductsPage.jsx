@@ -10,11 +10,11 @@ import { catalogApi } from "../api/catalog";
 export default function AdminProductsPage() {
   const { user, token, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [books, setBooks] = useState([]);
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [modal, setModal] = useState(null); // { mode: "create"|"edit", book?: {} }
+  const [modal, setModal] = useState(null); // { mode: "create"|"edit", product?: {} }
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({});
 
@@ -22,7 +22,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     if (!isAuthenticated || !canManage) {
-      navigate("/login", { state: { from: { pathname: "/admin/books" } } });
+      navigate("/login", { state: { from: { pathname: "/admin/products" } } });
       return;
     }
     load();
@@ -32,17 +32,17 @@ export default function AdminProductsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [booksRes, catRes] = await Promise.all([
+      const [productsRes, catRes] = await Promise.all([
         productsApi.list({}, token),
         catalogApi.listCategories(token).catch(() => []),
       ]);
-      setBooks(booksRes.results || []);
+      setProducts(productsRes.results || []);
       const raw = Array.isArray(catRes) ? catRes : [];
       const flatten = (arr) =>
         arr.flatMap((c) => [c, ...(c.children ? flatten(c.children) : [])]);
       setCategories(flatten(raw));
     } catch (err) {
-      setError(err.message || "Failed to load books.");
+      setError(err.message || "Failed to load products.");
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export default function AdminProductsPage() {
     setModal({ mode: "create" });
   };
 
-  const openEdit = (book) => {
+  const openEdit = (product) => {
     setForm({
       title: product.title,
       brand: product.brand,
@@ -76,14 +76,14 @@ export default function AdminProductsPage() {
       price: String(product.price),
       cover_image: product.cover_image || "",
       category_id: product.category_id,
-      published_date: product.published_date || "",
-      language: product.language || "English",
-      pages: product.pages ? String(product.pages) : "",
+      published_date: product.attributes?.published_date || product.published_date || "",
+      language: product.attributes?.language || product.language || "English",
+      pages: product.attributes?.pages ? String(product.attributes.pages) : (product.pages ? String(product.pages) : ""),
       is_active: product.is_active ?? true,
       stock_quantity: product.inventory?.stock_quantity ?? 0,
       warehouse_location: product.inventory?.warehouse_location || "",
     });
-    setModal({ mode: "edit", book });
+    setModal({ mode: "edit", product });
   };
 
   const closeModal = () => setModal(null);
@@ -122,7 +122,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (book) => {
+  const handleDelete = async (product) => {
     if (!confirm(`Delete "${product.title}"? This will deactivate the product.`)) return;
     setError(null);
     try {
@@ -154,7 +154,7 @@ export default function AdminProductsPage() {
             </Link>
             <Link to="/" className="flex items-center gap-2 text-gray-900">
               <BookMarked size={24} strokeWidth={1.8} />
-              <span className="font-serif text-xl">Admin · Books</span>
+              <span className="font-serif text-xl">Admin · Products</span>
             </Link>
           </div>
           <button
@@ -186,11 +186,11 @@ export default function AdminProductsPage() {
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            {books.length === 0 ? (
+            {products.length === 0 ? (
               <div className="py-16 text-center text-gray-500">
                 <BookMarked size={48} className="mx-auto mb-4 text-gray-300" />
-                <p className="font-medium">No books yet</p>
-                <p className="text-sm mt-1">Add your first book to get started.</p>
+                <p className="font-medium">No products yet</p>
+                <p className="text-sm mt-1">Add your first product to get started.</p>
                 <button
                   onClick={openCreate}
                   className="mt-4 inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700"
@@ -212,32 +212,32 @@ export default function AdminProductsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {books.map((b) => (
-                    <tr key={b.id} className="border-b border-gray-100 hover:bg-gray-50/50">
-                      <td className="px-4 py-3 font-medium text-gray-900">{b.title}</td>
-                      <td className="px-4 py-3 text-gray-600">{b.brand}</td>
-                      <td className="px-4 py-3 text-gray-600">${Number(b.price).toFixed(2)}</td>
-                      <td className="px-4 py-3 text-gray-600">{b.inventory?.stock_quantity ?? 0}</td>
+                  {products.map((p) => (
+                    <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50/50">
+                      <td className="px-4 py-3 font-medium text-gray-900">{p.title}</td>
+                      <td className="px-4 py-3 text-gray-600">{p.brand}</td>
+                      <td className="px-4 py-3 text-gray-600">${Number(p.price).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-gray-600">{p.inventory?.stock_quantity ?? 0}</td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                            b.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                            p.is_active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
                           }`}
                         >
-                          {b.is_active ? "Active" : "Inactive"}
+                          {p.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => openEdit(b)}
+                            onClick={() => openEdit(p)}
                             className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
                             title="Edit"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
-                            onClick={() => handleDelete(b)}
+                            onClick={() => handleDelete(p)}
                             className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                           >

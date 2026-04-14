@@ -27,16 +27,12 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/category/:id" element={<CategoryPage />} />
             <Route path="/product/:id" element={<ProductDetailPage />} />
-            {/* Backward compat for old book URLs */}
-            <Route path="/book/:id" element={<ProductDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/orders" element={<OrderHistoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin/products" element={<AdminProductsPage />} />
-            {/* Backward compat for old admin books URL */}
-            <Route path="/admin/books" element={<AdminProductsPage />} />
             <Route path="/admin/orders" element={<AdminOrdersPage />} />
             <Route path="/admin/revenue" element={<AdminRevenuePage />} />
             <Route path="/admin/staff" element={<AdminStaffPage />} />

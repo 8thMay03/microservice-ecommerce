@@ -296,7 +296,12 @@ services:
     restart: unless-stopped
 
   recommender-ai-service:
-    build: ./recommender-ai-service
+    build:
+      context: ./recommender-ai-service
+      cache_from:
+        - type=local,src=.buildcache/recommender-ai-service
+      cache_to:
+        - type=local,dest=.buildcache/recommender-ai-service,mode=max
 
     environment:
       DEBUG: "True"

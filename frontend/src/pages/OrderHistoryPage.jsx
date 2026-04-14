@@ -84,10 +84,10 @@ function OrderCard({ order }) {
                     </div>
                     <div className="min-w-0">
                       <Link
-                        to={`/book/${item.book_id}`}
+                        to={`/product/${item.product_id ?? item.book_id}`}
                         className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors line-clamp-1"
                       >
-                        {item.book_title || `Book #${item.book_id}`}
+                        {item.product_title || item.book_title || `Product #${item.product_id ?? item.book_id}`}
                       </Link>
                       <p className="text-xs text-gray-500">
                         ${Number(item.unit_price).toFixed(2)} × {item.quantity}

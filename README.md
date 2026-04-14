@@ -13,7 +13,7 @@ Client (Browser)
   -> API Gateway: http://localhost:8000
        /api/<service>/<path>
        |-> customer-service
-       |-> book-service
+       |-> product-service
        |-> catalog-service
        |-> cart-service
        |-> order-service
@@ -46,7 +46,7 @@ Gateway forward request theo rule:
 | Service | Vai trò chính | DB riêng |
 |---|---|---|
 | `customer-service` | Quản lý khách hàng, auth khách hàng | `customer-db` |
-| `book-service` | Sách + tồn kho | `book-db` |
+| `product-service` | Sản phẩm + tồn kho | `product-db` |
 | `catalog-service` | Danh mục sách | `catalog-db` |
 | `cart-service` | Giỏ hàng | `cart-db` |
 | `order-service` | Đơn hàng, điều phối payment + shipment | `order-db` |
@@ -64,7 +64,7 @@ Gateway forward request theo rule:
 
 - **Đăng ký khách hàng**: `customer-service` có thể khởi tạo cart mặc định qua `cart-service`.
 - **Tạo đơn hàng**: `order-service` gọi `cart-service` lấy item, gọi `pay-service` xử lý thanh toán, gọi `ship-service` tạo vận chuyển, sau đó clear cart.
-- **Gợi ý sách**: `recommender-ai-service` lấy lịch sử mua từ `order-service`, kết hợp tín hiệu rating từ `comment-rate-service`.
+- **Gợi ý sản phẩm**: `recommender-ai-service` lấy lịch sử mua từ `order-service`, kết hợp tín hiệu rating từ `comment-rate-service`.
 - **RAG chat**: Frontend gọi `api-gateway` tới `/api/rag/chat` để nhận trả lời từ `rag-service`.
 
 ---
@@ -111,7 +111,7 @@ python scripts/seed_data.py
 
 Script sẽ tạo:
 - 7 categories
-- 10 books mẫu
+- 10 products mẫu
 - tài khoản admin/staff
 - 10 customer mẫu
 
@@ -132,7 +132,7 @@ Một số nhóm endpoint thường dùng:
 | Nhóm | Prefix |
 |---|---|
 | Customers | `/api/customers/` |
-| Books | `/api/books/` |
+| Products | `/api/products/` |
 | Catalog | `/api/catalog/` |
 | Cart | `/api/cart/` |
 | Orders | `/api/orders/` |
@@ -169,7 +169,7 @@ microservice-bookstore/
 ├── frontend/
 ├── api-gateway/
 ├── customer-service/
-├── book-service/
+├── product-service/
 ├── catalog-service/
 ├── cart-service/
 ├── order-service/
@@ -297,7 +297,7 @@ Create Order:
 
 Recommendations:
   recommender-ai-service ──GET──▶ order-service/internal/orders/customer/{id}/history/
-  recommender-ai-service ──POST──▶ book-service/internal/books/bulk/
+  recommender-ai-service ──POST──▶ product-service/internal/products/bulk/
 
 Manager Reports:
   manager-service ──GET──▶ order-service/api/orders/
@@ -305,7 +305,7 @@ Manager Reports:
   manager-service ──GET──▶ customer-service/internal/customers/{id}/
 
 Staff Inventory:
-  staff-service ──PATCH──▶ book-service/api/books/{id}/inventory/
+  staff-service ──PATCH──▶ product-service/api/products/{id}/inventory/
 ```
 
 ---
@@ -327,9 +327,9 @@ customers
   updated_at   TIMESTAMP
 ```
 
-### book-service
+### product-service
 ```
-books
+products
   id               BIGSERIAL PK
   title            VARCHAR
   author           VARCHAR
@@ -344,9 +344,9 @@ books
   is_active        BOOLEAN
   created_at       TIMESTAMP
 
-book_inventory
+product_inventory
   id                BIGSERIAL PK
-  book_id           INT UNIQUE FK → books
+  product_id        INT UNIQUE FK → products
   stock_quantity    INT
   warehouse_location VARCHAR
   updated_at        TIMESTAMP
@@ -374,11 +374,11 @@ carts
 cart_items
   id          BIGSERIAL PK
   cart_id     INT FK → carts
-  book_id     INT  (FK → book-service)
+  product_id  INT  (FK → product-service)
   quantity    INT
   unit_price  DECIMAL(10,2)
   added_at    TIMESTAMP
-  UNIQUE(cart_id, book_id)
+  UNIQUE(cart_id, product_id)
 ```
 
 ### order-service
@@ -396,8 +396,8 @@ orders
 order_items
   id          BIGSERIAL PK
   order_id    INT FK → orders
-  book_id     INT  (FK → book-service)
-  book_title  VARCHAR
+  product_id  INT  (FK → product-service)
+  product_title  VARCHAR
   quantity    INT
   unit_price  DECIMAL(10,2)
 ```
@@ -435,16 +435,16 @@ shipments
 ```
 ratings
   id          BIGSERIAL PK
-  book_id     INT  (FK → book-service)
+  product_id  INT  (FK → product-service)
   customer_id INT  (FK → customer-service)
   score       SMALLINT  (1-5)
   created_at  TIMESTAMP
   updated_at  TIMESTAMP
-  UNIQUE(book_id, customer_id)
+  UNIQUE(product_id, customer_id)
 
 comments
   id          BIGSERIAL PK
-  book_id     INT  (FK → book-service)
+  product_id  INT  (FK → product-service)
   customer_id INT  (FK → customer-service)
   content     TEXT
   is_approved BOOLEAN
@@ -456,11 +456,11 @@ comments
 recommendation_cache
   id          BIGSERIAL PK
   customer_id INT
-  book_id     INT
+  product_id  INT
   score       FLOAT
   strategy    VARCHAR
   created_at  TIMESTAMP
-  UNIQUE(customer_id, book_id)
+  UNIQUE(customer_id, product_id)
 ```
 
 ### staff-service
@@ -506,16 +506,16 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 | PUT | `/api/customers/profile/` | JWT | Update own profile |
 | GET | `/api/customers/<id>/` | JWT | Get customer by ID |
 
-### Book Service  `/api/books/`
+### Product Service  `/api/products/`
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/books/` | None | List books (supports ?search=, ?category_id=, ?min_price=, ?max_price=, ?page=) |
-| GET | `/api/books/<id>/` | None | Get book detail |
-| POST | `/api/books/` | None | Create a book |
-| PUT | `/api/books/<id>/` | None | Update book |
-| DELETE | `/api/books/<id>/` | None | Soft-delete book |
-| PATCH | `/api/books/<id>/inventory/` | None | Adjust stock (delta field) |
+| GET | `/api/products/` | None | List products (supports ?search=, ?category_id=, ?min_price=, ?max_price=, ?page=) |
+| GET | `/api/products/<id>/` | None | Get product detail |
+| POST | `/api/products/` | None | Create a product |
+| PUT | `/api/products/<id>/` | None | Update product |
+| DELETE | `/api/products/<id>/` | None | Soft-delete product |
+| PATCH | `/api/products/<id>/inventory/` | None | Adjust stock (delta field) |
 
 ### Catalog Service  `/api/catalog/`
 
@@ -565,10 +565,10 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/reviews/ratings/?book_id=<id>` | None | Get ratings for a book |
+| GET | `/api/reviews/ratings/?product_id=<id>` | None | Get ratings for a product |
 | POST | `/api/reviews/ratings/` | None | Submit/update a rating |
-| GET | `/api/reviews/ratings/book/<id>/summary/` | None | Rating summary for a book |
-| GET | `/api/reviews/comments/?book_id=<id>` | None | Comments for a book |
+| GET | `/api/reviews/ratings/product/<id>/summary/` | None | Rating summary for a product |
+| GET | `/api/reviews/comments/?product_id=<id>` | None | Comments for a product |
 | POST | `/api/reviews/comments/` | None | Post a comment |
 | DELETE | `/api/reviews/comments/<id>/` | None | Delete a comment |
 
@@ -576,7 +576,7 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/recommendations/<customer_id>/` | None | Get personalized book recommendations |
+| GET | `/api/recommendations/<customer_id>/` | None | Get personalized product recommendations |
 | GET | `/api/recommendations/<customer_id>/?refresh=true` | None | Force-recompute recommendations |
 
 ### Staff Service  `/api/staff/`
@@ -589,7 +589,7 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 | GET | `/api/staff/<id>/` | JWT | Get staff member |
 | PUT | `/api/staff/<id>/` | JWT | Update staff member |
 | DELETE | `/api/staff/<id>/` | JWT | Deactivate staff member |
-| PATCH | `/api/staff/inventory/<book_id>/` | JWT | Adjust book stock |
+| PATCH | `/api/staff/inventory/<product_id>/` | JWT | Adjust product stock |
 
 ### Manager Service  `/api/managers/`
 
@@ -642,7 +642,7 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 }
 ```
 
-### POST /api/books/
+### POST /api/products/
 ```json
 // Request
 {
@@ -673,14 +673,14 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 ### POST /api/cart/1/items/
 ```json
 // Request
-{ "book_id": 7, "quantity": 2, "unit_price": "35.99" }
+{ "product_id": 7, "quantity": 2, "unit_price": "35.99" }
 
 // Response 201
 {
   "id": 1,
   "customer_id": 1,
   "items": [
-    { "id": 1, "book_id": 7, "quantity": 2, "unit_price": "35.99", "subtotal": "71.98" }
+    { "id": 1, "product_id": 7, "quantity": 2, "unit_price": "35.99", "subtotal": "71.98" }
   ],
   "total_price": "71.98"
 }
@@ -704,7 +704,7 @@ All routes below are called through the **API Gateway** at `http://localhost:800
   "shipping_address": "123 Main St, Springfield",
   "payment_method": "CREDIT_CARD",
   "items": [
-    { "id": 1, "book_id": 7, "book_title": "Clean Architecture", "quantity": 2, "unit_price": "35.99", "subtotal": "71.98" }
+    { "id": 1, "product_id": 7, "product_title": "Clean Architecture", "quantity": 2, "unit_price": "35.99", "subtotal": "71.98" }
   ],
   "created_at": "2026-03-12T10:10:00Z"
 }
@@ -713,10 +713,10 @@ All routes below are called through the **API Gateway** at `http://localhost:800
 ### POST /api/reviews/ratings/
 ```json
 // Request
-{ "book_id": 7, "customer_id": 1, "score": 5 }
+{ "product_id": 7, "customer_id": 1, "score": 5 }
 
 // Response 201
-{ "id": 1, "book_id": 7, "customer_id": 1, "score": 5, "created_at": "2026-03-12T10:15:00Z" }
+{ "id": 1, "product_id": 7, "customer_id": 1, "score": 5, "created_at": "2026-03-12T10:15:00Z" }
 ```
 
 ### GET /api/recommendations/1/
@@ -726,8 +726,8 @@ All routes below are called through the **API Gateway** at `http://localhost:800
   "customer_id": 1,
   "strategy": "collaborative_filtering",
   "recommendations": [
-    { "book_id": 3, "score": 0.9512, "title": "The Pragmatic Programmer", "author": "Hunt & Thomas", "price": "42.00" },
-    { "book_id": 11, "score": 0.8834, "title": "Design Patterns", "author": "Gang of Four", "price": "49.99" }
+    { "product_id": 3, "score": 0.9512, "title": "The Pragmatic Programmer", "brand": "Hunt & Thomas", "price": "42.00" },
+    { "product_id": 11, "score": 0.8834, "title": "Design Patterns", "brand": "Gang of Four", "price": "49.99" }
   ]
 }
 ```
@@ -792,7 +792,7 @@ microservice-bookstore/
 │       ├── internal_urls.py      # Called by peer services
 │       ├── internal_views.py
 │       └── services.py           # CartServiceClient
-├── book-service/
+├── product-service/
 │   └── books/                    # Book + BookInventory models
 ├── catalog-service/
 │   └── catalog/                  # Category (hierarchical)
