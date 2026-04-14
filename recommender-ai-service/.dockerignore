@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Django collected static (should be built in image/runtime)
+staticfiles/
+
+# Local/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore

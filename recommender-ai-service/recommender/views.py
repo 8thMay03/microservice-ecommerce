@@ -12,6 +12,26 @@ from .analytics import build_overview
 logger = logging.getLogger(__name__)
 
 
+def _recommendation_payload_rows(pairs, product_details):
+    """Build API rows; skip product_ids missing from product_details (stale / deleted)."""
+    rows = []
+    for product_id, score in pairs:
+        if product_id not in product_details:
+            continue
+        detail = product_details[product_id]
+        rows.append({
+            "product_id": product_id,
+            "score": round(score, 4),
+            "title": detail.get("title", ""),
+            "brand": detail.get("brand", ""),
+            "price": detail.get("price"),
+            "cover_image": detail.get("cover_image", ""),
+            "category_id": detail.get("category_id"),
+            "product_type": detail.get("product_type", ""),
+        })
+    return rows
+
+
 class RecommendationView(APIView):
     """
     GET /api/recommendations/<customer_id>/
@@ -33,54 +53,35 @@ class RecommendationView(APIView):
             )
             if cached:
                 product_details = self._fetch_product_details([pid for pid, _ in cached])
-                results = []
-                for product_id, score in cached:
-                    detail = product_details.get(product_id, {})
-                    results.append({
-                        "product_id": product_id,
-                        "score": round(score, 4),
-                        "title": detail.get("title", ""),
-                        "brand": detail.get("brand", ""),
-                        "price": detail.get("price"),
-                        "cover_image": detail.get("cover_image", ""),
-                        "category_id": detail.get("category_id"),
-                        "product_type": detail.get("product_type", ""),
+                results = _recommendation_payload_rows(cached, product_details)
+                if results:
+                    return Response({
+                        "customer_id": customer_id,
+                        "strategy": "cached",
+                        "recommendations": results,
                     })
-                return Response({
-                    "customer_id": customer_id,
-                    "strategy": "cached",
-                    "recommendations": results,
-                })
+                # Cache only had stale IDs (e.g. after DB reseed); fall through and recompute.
 
         # Compute fresh recommendations
         recs, strategy = get_recommendations(customer_id, limit)
 
-        # Persist
-        RecommendationCache.objects.filter(customer_id=customer_id).delete()
-        RecommendationCache.objects.bulk_create([
-            RecommendationCache(
-                customer_id=customer_id,
-                product_id=product_id,
-                score=score,
-                strategy=strategy,
-            )
-            for product_id, score in recs
-        ])
-
         product_details = self._fetch_product_details([product_id for product_id, _ in recs])
-        results = []
-        for product_id, score in recs:
-            detail = product_details.get(product_id, {})
-            results.append({
-                "product_id": product_id,
-                "score": round(score, 4),
-                "title": detail.get("title", ""),
-                "brand": detail.get("brand", ""),
-                "price": detail.get("price"),
-                "cover_image": detail.get("cover_image", ""),
-                "category_id": detail.get("category_id"),
-                "product_type": detail.get("product_type", ""),
-            })
+        recs = [(pid, s) for pid, s in recs if pid in product_details]
+
+        # Persist only rows that still exist in product-service
+        RecommendationCache.objects.filter(customer_id=customer_id).delete()
+        if recs:
+            RecommendationCache.objects.bulk_create([
+                RecommendationCache(
+                    customer_id=customer_id,
+                    product_id=product_id,
+                    score=score,
+                    strategy=strategy,
+                )
+                for product_id, score in recs
+            ])
+
+        results = _recommendation_payload_rows(recs, product_details)
 
         return Response({
             "customer_id": customer_id,
@@ -116,21 +117,8 @@ class ItemRecommendationView(APIView):
         limit = int(request.query_params.get("limit", 8))
         recs = item_based_similar(product_id, limit)
         product_details = RecommendationView._fetch_product_details([pid for pid, _ in recs])
-        results = []
-        for pid, score in recs:
-            detail = product_details.get(pid, {})
-            results.append(
-                {
-                    "product_id": pid,
-                    "score": round(score, 4),
-                    "title": detail.get("title", ""),
-                    "brand": detail.get("brand", ""),
-                    "price": detail.get("price"),
-                    "cover_image": detail.get("cover_image", ""),
-                    "category_id": detail.get("category_id"),
-                    "product_type": detail.get("product_type", ""),
-                }
-            )
+        recs = [(pid, s) for pid, s in recs if pid in product_details]
+        results = _recommendation_payload_rows(recs, product_details)
         return Response(
             {
                 "product_id": product_id,

@@ -107,18 +107,23 @@ export default function ProductDetailPage() {
       setMyRating(0);
       setCommentText("");
       try {
-        const [detailRes, listRes] = await Promise.all([
-          productsApi.get(id),
-          productsApi.list({ page_size: 20 }),
-        ]);
+        const detailRes = await productsApi.get(id);
         if (cancelled) return;
         const b = normalizeProduct(detailRes);
         setBook(b);
-        const related = (listRes.results || [])
-          .map(normalizeBook)
-          .filter((r) => r.id !== b.id && r.category_id === b.category_id)
-          .slice(0, 4);
-        setrelatedProducts(related);
+        let related = [];
+        try {
+          const listRes = await productsApi.list({ page_size: 20 });
+          if (!cancelled) {
+            related = (listRes.results || [])
+              .map(normalizeProduct)
+              .filter((r) => r && r.id !== b.id && r.category_id === b.category_id)
+              .slice(0, 4);
+          }
+        } catch {
+          /* related block is optional; detail must still render */
+        }
+        if (!cancelled) setrelatedProducts(related);
         loadReviews(id);
         if (user?.id) loadMyRating(id, user.id);
       } catch (err) {
