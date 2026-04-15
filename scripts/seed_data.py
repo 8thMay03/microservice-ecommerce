@@ -60,7 +60,7 @@ SAMPLE_PRODUCTS = [
      "description": "The definitive monograph on Dieter Rams and his principles of good design.",
      "sku": "BK-9780714879747", "attributes": {"author": "Klaus Klemp & Keiko Ueki-Polet", "pages": 480, "isbn": "978-0-7148-7974-7", "language": "English", "published_date": "2021-01-01"}},
     {"title": "Sapiens: A Brief History of Humankind", "brand": "Yuval Noah Harari", "price": 22, "category": "history",
-     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1455885666463-4d5c8a4b0d84?w=600&q=80",
+     "product_type": "BOOK", "image": "https://bizweb.dktcdn.net/100/418/357/products/51xyww6zexl.jpg?v=1682391845823",
      "description": "A sweeping narrative of human history, from early hunter-gatherers to the modern age.",
      "sku": "BK-9780062316097", "attributes": {"author": "Yuval Noah Harari", "pages": 498, "isbn": "978-0-06-231609-7", "language": "English", "published_date": "2015-02-10"}},
     {"title": "The Pragmatic Programmer (20th Anniversary)", "brand": "Andrew Hunt & David Thomas", "price": 38, "category": "technology-books",
@@ -126,11 +126,11 @@ SAMPLE_PRODUCTS = [
      "description": "Wireless mechanical keyboard with compact layout and multi-device switching.",
      "sku": "EL-KEYCHRON-K2", "attributes": {"warranty": "12 months", "switch_type": "Brown", "connectivity": "Bluetooth / USB-C", "layout": "75%"}},
     {"title": "Canon EOS R50 Mirrorless Camera", "brand": "Canon", "price": 679, "category": "cameras",
-     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1519183071298-a2962be90b8e?w=600&q=80",
+     "product_type": "ELECTRONICS", "image": "https://cdn.vjshop.vn/may-anh/mirrorless/canon/canon-eos-r50/black-18-45/canon-eos-r50-lens-18-45mm-500x500.jpg",
      "description": "Compact mirrorless camera for creators with fast autofocus and 4K video.",
      "sku": "EL-CAN-R50-BODY", "attributes": {"warranty": "12 months", "sensor": "APS-C", "video": "4K", "mount": "RF"}},
     {"title": "Anker 20W USB-C Charger", "brand": "Anker", "price": 19, "category": "electronics",
-     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1603575448367-cc5f09c5b0db?w=600&q=80",
+     "product_type": "ELECTRONICS", "image": "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/9499/330020/adapter-sac-2-cong-usb-type-c-iq3-20w-anker-a2348-den-1-638893150043982173-750x500.jpg",
      "description": "Compact fast charger for phones and tablets with USB-C Power Delivery.",
      "sku": "EL-ANK-CHG-20W", "attributes": {"warranty": "18 months", "power": "20W", "ports": 1, "connector": "USB-C"}},
 
@@ -148,7 +148,7 @@ SAMPLE_PRODUCTS = [
      "description": "Everyday slim-fit denim with comfortable stretch and classic 5-pocket styling.",
      "sku": "CL-LV-SLIMJ-M01", "attributes": {"sizes": ["30", "32", "34", "36"], "color": "Indigo", "material": "Denim"}},
     {"title": "Women's Oversized Hoodie", "brand": "Adidas", "price": 69, "category": "womens-clothing",
-     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1520975958225-9d7cb0a90103?w=600&q=80",
+     "product_type": "CLOTHING", "image": "https://us.blakelyclothing.com/cdn/shop/products/2011WbeigeD-1_800x.jpg?v=1676370836",
      "description": "Soft fleece hoodie with relaxed silhouette and ribbed cuffs.",
      "sku": "CL-ADS-HOOD-W01", "attributes": {"sizes": ["XS", "S", "M", "L"], "color": "Heather Grey", "material": "Cotton blend"}},
     {"title": "Kids Cotton T‑Shirt Pack (3)", "brand": "Uniqlo", "price": 24, "category": "kids-clothing",
@@ -156,11 +156,11 @@ SAMPLE_PRODUCTS = [
      "description": "Soft everyday tees for kids with durable stitching and comfortable fit.",
      "sku": "CL-UNQ-KTS-3PK", "attributes": {"sizes": ["90", "100", "110", "120"], "color": "Assorted", "material": "100% Cotton"}},
     {"title": "Leather Chelsea Boots", "brand": "Clarks", "price": 149, "category": "shoes",
-     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1528701800489-20be9c7b2c85?w=600&q=80",
+     "product_type": "CLOTHING", "image": "https://thursdayboots.com/cdn/shop/products/1024x1024-Men-Cavalier-Black-092121-3.4_1024x1024.jpg?v=1633034593",
      "description": "Classic pull-on boots with elastic side panels and durable outsole.",
      "sku": "CL-CLK-CHELS-M01", "attributes": {"sizes": ["7", "8", "9", "10", "11"], "color": "Dark Brown", "material": "Leather"}},
     {"title": "Women's Summer Dress", "brand": "Zara", "price": 59, "category": "womens-clothing",
-     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1520975682032-68b1f9b21534?w=600&q=80",
+     "product_type": "CLOTHING", "image": "https://images-cdn.ubuy.co.in/635e29037403ec6f010f8f6f-summer-dresses-for-women-2022-women-s.jpg",
      "description": "Lightweight dress with a flattering cut for warm-weather days.",
      "sku": "CL-ZRA-DRESS-W01", "attributes": {"sizes": ["XS", "S", "M", "L"], "color": "Floral", "material": "Viscose"}},
 
@@ -178,7 +178,7 @@ SAMPLE_PRODUCTS = [
      "description": "Rich dark chocolate balanced with a hint of sea salt.",
      "sku": "FD-LDT-DS-100", "attributes": {"weight": "100g", "cocoa": "70%", "allergens": ["milk", "soy"]}},
     {"title": "Roasted Almonds (Unsalted)", "brand": "Planters", "price": 8, "category": "snacks",
-     "product_type": "FOOD", "image": "https://images.unsplash.com/photo-1532634726-8b9fb99825d4?w=600&q=80",
+     "product_type": "FOOD", "image": "https://nuts.com/images/rackcdn/ed910ae2d60f0d25bcb8-80550f96b5feb12604f4f720bfefb46d.ssl.cf1.rackcdn.com/e54713f3a6d21cf3-lts0Khbk-zoom.jpg",
      "description": "Crunchy roasted almonds. A simple snack with clean ingredients.",
      "sku": "FD-PLN-ALM-400", "attributes": {"weight": "400g", "ingredients": ["almonds"], "allergens": ["nuts"]}},
     {"title": "Sparkling Water Variety Pack", "brand": "LaCroix", "price": 12, "category": "beverages",
@@ -196,11 +196,11 @@ SAMPLE_PRODUCTS = [
      "description": "Minimalist oak coffee table with clean lines and natural finish.",
      "sku": "HM-IK-OAKCTBL01", "attributes": {"dimensions": "120x60x45cm", "material": "Solid Oak", "weight": "15kg"}},
     {"title": "Ergonomic Office Chair", "brand": "Herman Miller", "price": 999, "category": "furniture",
-     "product_type": "HOME", "image": "https://images.unsplash.com/photo-1582582621959-48d27397dcf2?w=600&q=80",
+     "product_type": "HOME", "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvKbJs87del7Y6nBRCKm__R5HR7X62wLfdDw&s",
      "description": "Premium ergonomic chair designed for long work sessions and better posture.",
      "sku": "HM-HM-ERGOCHR01", "attributes": {"material": "Mesh", "color": "Graphite", "warranty": "12 years"}},
     {"title": "Nonstick Frying Pan 28cm", "brand": "Tefal", "price": 39, "category": "kitchen",
-     "product_type": "HOME", "image": "https://images.unsplash.com/photo-1556911073-52527ac437f5?w=600&q=80",
+     "product_type": "HOME", "image": "https://images-na.ssl-images-amazon.com/images/I/71FlPCBSmoL.jpg",
      "description": "Everyday nonstick pan with even heating and comfortable handle.",
      "sku": "HM-TEF-PAN-28", "attributes": {"diameter": "28cm", "material": "Aluminum", "coating": "Nonstick"}},
     {"title": "Stainless Steel Chef Knife 8-inch", "brand": "Victorinox", "price": 49, "category": "kitchen",
@@ -212,7 +212,7 @@ SAMPLE_PRODUCTS = [
      "description": "Quiet wall clock with clean dial and easy-to-read markers.",
      "sku": "HM-MUJI-CLOCK01", "attributes": {"diameter": "25cm", "power": "AA battery", "color": "White"}},
     {"title": "Scented Candle - Vanilla", "brand": "Yankee Candle", "price": 19, "category": "decor",
-     "product_type": "HOME", "image": "https://images.unsplash.com/photo-1608571424269-a68f57c46809?w=600&q=80",
+     "product_type": "HOME", "image": "https://m.media-amazon.com/images/I/81HSydTuXVL.jpg",
      "description": "Warm vanilla fragrance for cozy evenings and relaxing ambience.",
      "sku": "HM-YC-VAN-CNDL", "attributes": {"burn_time": "45 hours", "scent": "Vanilla", "weight": "400g"}},
 
@@ -222,11 +222,11 @@ SAMPLE_PRODUCTS = [
      "description": "Replace multiple weights with one compact adjustable set.",
      "sku": "SP-BF-DUMBBL20", "attributes": {"weight_range": "2-20kg", "material": "Steel with rubber grip"}},
     {"title": "Yoga Mat 6mm", "brand": "Manduka", "price": 79, "category": "fitness",
-     "product_type": "SPORTS", "image": "https://images.unsplash.com/photo-1599447292180-45c4663c0c81?w=600&q=80",
+     "product_type": "SPORTS", "image": "https://m.media-amazon.com/images/I/41fQHCuWAsL._AC_UF894,1000_QL80_.jpg",
      "description": "Durable yoga mat with great grip for daily practice.",
      "sku": "SP-MDK-YOGAMAT6", "attributes": {"thickness": "6mm", "material": "PVC", "color": "Black"}},
     {"title": "Running Water Bottle 500ml", "brand": "Nike", "price": 14, "category": "fitness",
-     "product_type": "SPORTS", "image": "https://images.unsplash.com/photo-1526402466926-54d7f25e5536?w=600&q=80",
+     "product_type": "SPORTS", "image": "https://m.media-amazon.com/images/I/61XvgOL89lL.jpg",
      "description": "Lightweight bottle with easy-sip nozzle for training sessions.",
      "sku": "SP-NK-BTTL-500", "attributes": {"volume": "500ml", "material": "BPA-free plastic"}},
     {"title": "Camping Tent 2-Person", "brand": "Coleman", "price": 119, "category": "outdoor",
@@ -234,7 +234,7 @@ SAMPLE_PRODUCTS = [
      "description": "Quick setup tent with rainfly for weekend camping trips.",
      "sku": "SP-CLM-TENT-2P", "attributes": {"capacity": "2-person", "season": "3-season", "weight": "2.9kg"}},
     {"title": "Outdoor Hiking Backpack 30L", "brand": "Osprey", "price": 149, "category": "outdoor",
-     "product_type": "SPORTS", "image": "https://images.unsplash.com/photo-1526481280695-3c687fd5432c?w=600&q=80",
+     "product_type": "SPORTS", "image": "https://ampexgear.com/cdn/shop/files/AMP6001950LBackpack_10_a9ae3989-8d05-40ac-8f03-721588f0e996.jpg?v=1692995580&width=1500",
      "description": "Comfortable daypack with breathable back panel and hydration compatibility.",
      "sku": "SP-OSP-PACK-30L", "attributes": {"capacity": "30L", "weight": "1.2kg", "color": "Blue"}},
     {"title": "Soccer Ball - Match Size 5", "brand": "Adidas", "price": 29, "category": "team-sports",
@@ -307,16 +307,23 @@ def seed_products():
 from products.models import Product, ProductInventory
 import json
 data = json.loads('''{data_json}''')
+created_count = 0
+updated_count = 0
 for d in data:
-    Product.objects.get_or_create(sku=d["sku"], defaults={{
+    _, created = Product.objects.update_or_create(sku=d["sku"], defaults={{
         "title": d["title"], "brand": d["brand"], "price": d["price"],
         "description": d["description"], "cover_image": d["cover_image"],
         "category_id": d["category_id"], "product_type": d["product_type"],
         "attributes": d["attributes"], "is_active": True
     }})
+    if created:
+        created_count += 1
+    else:
+        updated_count += 1
 for product in Product.objects.all():
     ProductInventory.objects.get_or_create(product=product, defaults={{"stock_quantity": 50}})
 print("Products:", Product.objects.count())
+print("Created:", created_count, "Updated:", updated_count)
 """
     return run_exec("product-service", code)
 
