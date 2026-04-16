@@ -91,3 +91,21 @@ AUTH_USER_MODEL = "customers.Customer"
 
 # Inter-service URLs
 CART_SERVICE_URL = config("CART_SERVICE_URL", default="http://cart-service:8000")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "service": "customer-service", "logger": "%(name)s", "message": "%(message)s"}',
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "customers": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

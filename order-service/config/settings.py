@@ -73,3 +73,30 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 PAY_SERVICE_URL = config("PAY_SERVICE_URL", default="http://pay-service:8000")
 SHIP_SERVICE_URL = config("SHIP_SERVICE_URL", default="http://ship-service:8000")
 CART_SERVICE_URL = config("CART_SERVICE_URL", default="http://cart-service:8000")
+
+# ── Structured Logging (visible in Loki) ─────────────────────────────────────
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "service": "order-service", "logger": "%(name)s", "message": "%(message)s"}',
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "orders": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

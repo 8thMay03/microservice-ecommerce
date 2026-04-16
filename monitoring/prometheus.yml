@@ -7,28 +7,3 @@ scrape_configs:
     static_configs:
       - targets: ['api-gateway:8000']
     metrics_path: '/metrics'
-
-  - job_name: 'order-service'
-    static_configs:
-      - targets: ['order-service:8000']
-    metrics_path: '/metrics'
-
-  - job_name: 'book-service'
-    static_configs:
-      - targets: ['book-service:8000']
-    metrics_path: '/metrics'
-
-  - job_name: 'customer-service'
-    static_configs:
-      - targets: ['customer-service:8000']
-    metrics_path: '/metrics'
-
-  - job_name: 'recommender-ai-service'
-    static_configs:
-      - targets: ['recommender-ai-service:8000']
-    metrics_path: '/metrics'
-
-  - job_name: 'rag-service'
-    static_configs:
-      - targets: ['rag-service:8000']
-    metrics_path: '/health'

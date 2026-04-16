@@ -83,3 +83,15 @@ AUTH_USER_MODEL = "management.ManagerUser"
 ORDER_SERVICE_URL = config("ORDER_SERVICE_URL", default="http://order-service:8000")
 CUSTOMER_SERVICE_URL = config("CUSTOMER_SERVICE_URL", default="http://customer-service:8000")
 STAFF_SERVICE_URL = config("STAFF_SERVICE_URL", default="http://staff-service:8000")
+
+LOGGING = {
+    "version": 1, "disable_existing_loggers": False,
+    "formatters": {"json": {"format": '{"time": "%(asctime)s", "level": "%(levelname)s", "service": "manager-service", "logger": "%(name)s", "message": "%(message)s"}', "datefmt": "%Y-%m-%dT%H:%M:%S"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "management": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

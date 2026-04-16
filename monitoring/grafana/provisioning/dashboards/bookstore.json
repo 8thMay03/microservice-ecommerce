@@ -1,0 +1,150 @@
+{
+  "title": "Bookstore API Gateway",
+  "uid": "bookstore-gateway",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total HTTP Requests",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(django_http_requests_total_by_method_total)",
+          "legendFormat": "Total Requests",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] } } }
+    },
+    {
+      "id": 2,
+      "title": "Requests per Second",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(django_http_requests_total_by_method_total[1m]))",
+          "legendFormat": "req/s",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "reqps", "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] } } }
+    },
+    {
+      "id": 3,
+      "title": "4xx Errors",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(django_http_responses_total_by_status_total{status=~\"4..\"})",
+          "legendFormat": "4xx",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] } } }
+    },
+    {
+      "id": 4,
+      "title": "5xx Errors",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(django_http_responses_total_by_status_total{status=~\"5..\"})",
+          "legendFormat": "5xx",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } }
+    },
+    {
+      "id": 5,
+      "title": "HTTP Requests by Method",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (method) (rate(django_http_requests_total_by_method_total[1m]))",
+          "legendFormat": "{{method}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } } }
+    },
+    {
+      "id": 6,
+      "title": "HTTP Responses by Status",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(django_http_responses_total_by_status_total[1m]))",
+          "legendFormat": "HTTP {{status}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } } }
+    },
+    {
+      "id": 7,
+      "title": "Request Latency (avg ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(django_http_requests_latency_seconds_by_view_method_sum[1m]) / rate(django_http_requests_latency_seconds_by_view_method_count[1m]) * 1000",
+          "legendFormat": "{{view}} {{method}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "lineWidth": 2 } } }
+    },
+    {
+      "id": 8,
+      "title": "Requests by View/Endpoint",
+      "type": "barchart",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (view) (rate(django_http_requests_total_by_view_transport_method_total[5m])))",
+          "legendFormat": "{{view}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" } }
+    },
+    {
+      "id": 9,
+      "title": "Service Health (Downstream)",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 6 },
+      "targets": [
+        {
+          "expr": "sum by (view) (django_http_responses_total_by_status_total)",
+          "legendFormat": "{{view}}",
+          "instant": true,
+          "datasource": { "type": "prometheus", "uid": "${datasource}" }
+        }
+      ],
+      "fieldConfig": { "defaults": { "custom": { "displayMode": "color-background" } } }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus", "value": "Prometheus" }
+      }
+    ]
+  }
+}

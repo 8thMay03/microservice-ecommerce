@@ -49,6 +49,33 @@ CORS_ALLOW_ALL_ORIGINS = True
 STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# ── Structured Logging (visible in Loki) ─────────────────────────────────────
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "service": "api-gateway", "logger": "%(name)s", "message": "%(message)s"}',
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "proxy": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}
+
 # ── Downstream service registry ───────────────────────────────────────────────
 SERVICE_REGISTRY = {
     "customers":     config("CUSTOMER_SERVICE_URL",    default="http://customer-service:8000"),

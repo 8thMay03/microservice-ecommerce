@@ -86,3 +86,21 @@ BEHAVIOR_MODEL_PATH = config(
 BEHAVIOR_DL_ENABLED = config("BEHAVIOR_DL_ENABLED", default=True, cast=bool)
 # cpu | cuda | cuda:0 | mps | auto (CUDA then MPS then CPU)
 BEHAVIOR_TORCH_DEVICE = config("BEHAVIOR_TORCH_DEVICE", default="auto")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "service": "recommender-ai-service", "logger": "%(name)s", "message": "%(message)s"}',
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "recommender": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}
