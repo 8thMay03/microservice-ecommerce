@@ -25,11 +25,11 @@ export default function ProductCard({ product, showRating = false }) {
       {/* Image container */}
       <Link to={`/product/${item.id}`} className="block relative overflow-hidden bg-gray-50 rounded-sm">
         {/* Badges */}
-        {item.isNew && (
+        {/* {item.isNew && (
           <span className="absolute top-3 left-3 z-10 bg-[#e8392a] text-white text-xs font-semibold px-2.5 py-1 rounded-full tracking-wide">
             New
           </span>
-        )}
+        )} */}
 
         {/* Product type badge */}
         {item.product_type && item.product_type !== "BOOK" && (

@@ -1,867 +1,195 @@
-# Microservice BookStore
+# 📚 Microservice BookStore
 
-Hệ thống bookstore theo kiến trúc microservice, chạy bằng Docker Compose, gồm:
-- `frontend` (React + Vite, serve qua Nginx)
-- `api-gateway` (Django DRF reverse proxy)
-- 12 backend services độc lập (mỗi service sở hữu DB riêng, trừ `rag-service`)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![PostgreSQL](https://img.shields.io/badge/postgresql-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
 
-## 1) Tổng quan kiến trúc
+Hệ thống BookStore toàn diện được xây dựng theo kiến trúc **Microservices (Microservice Architecture)**. Dự án sử dụng API Gateway đóng vai trò Entrypoint, mỗi dịch vụ đều có cơ sở dữ liệu riêng biệt độc lập và toàn bộ hệ thống được triển khai tự động hóa bằng Docker Compose.
 
-```text
-Client (Browser)
-  -> Frontend: http://localhost:3000
-  -> API Gateway: http://localhost:8000
-       /api/<service>/<path>
-       |-> customer-service
-       |-> product-service
-       |-> catalog-service
-       |-> cart-service
-       |-> order-service
-       |-> pay-service
-       |-> ship-service
-       |-> comment-rate-service
-       |-> recommender-ai-service
-       |-> staff-service
-       |-> manager-service
-       |-> rag-service
+---
+
+## 🏗️ 1. Tổng quan Kiến trúc (Architecture)
+
+Hệ thống bao gồm ứng dụng Client (Frontend web UI), một API Gateway và 12 Backend Microservices thực hiện chức năng chuyên biệt.
+
+```mermaid
+graph TD
+    Client[📱 Client / Browser] -->|HTTP :3000| Frontend[🌐 React Frontend]
+    Client -->|HTTP :8000| Gateway[🚪 API Gateway]
+    
+    Gateway -->|/api/customers| CUS[👤 Customer Service :8001]
+    Gateway -->|/api/products| PRO[📦 Product Service :8002]
+    Gateway -->|/api/catalog| CAT[🏷️ Catalog Service :8003]
+    Gateway -->|/api/cart| CRT[🛒 Cart Service :8004]
+    Gateway -->|/api/orders| ORD[🧾 Order Service :8005]
+    Gateway -->|/api/payments| PAY[💳 Pay Service :8006]
+    Gateway -->|/api/shipments| SHP[🚚 Ship Service :8007]
+    Gateway -->|/api/reviews| REV[⭐ Comment & Rate Service :8008]
+    Gateway -->|/api/recommendations| REC[🤖 Recommender AI Service :8009]
+    Gateway -->|/api/staff| STF[👨‍💼 Staff Service :8010]
+    Gateway -->|/api/managers| MNG[📈 Manager Service :8011]
+    Gateway -->|/api/rag| RAG[💬 RAG Chat Service :8012]
+
+    CUS --> DB1[(Customer DB)]
+    PRO --> DB2[(Product DB)]
+    CAT --> DB3[(Catalog DB)]
+    CRT --> DB4[(Cart DB)]
+    ORD --> DB5[(Order DB)]
+    PAY --> DB6[(Pay DB)]
+    SHP --> DB7[(Ship DB)]
+    REV --> DB8[(Review DB)]
+    REC --> DB9[(Recommend DB)]
+    STF --> DB10[(Staff DB)]
+    MNG --> DB11[(Manager DB)]
 ```
 
-Gateway forward request theo rule:
-- Client gọi: `/api/<service>/<path>`
-- Gateway forward tới: `<SERVICE_URL>/api/<service>/<path>`
+---
+
+## 🚀 2. Danh sách Các Dịch vụ (Services)
+
+### 🌍 Services Công khai
+| Service | Host Port | Công nghệ | Mô tả |
+|---------|---------|-----------------|-------|
+| `frontend` | `3000` | React + Vite | Giao diện tương tác với người dùng (UI), được serve qua Nginx trong container |
+| `api-gateway` | `8000` | Django DRF | Entrypoint duy nhất định tuyến toàn bộ request HTTP tới các services backend |
+
+### 🔒 Backend Microservices (Internal)
+Mỗi service (ngoại trừ `rag-service`) đều liên kết độc quyền với một CSDL PostgreSQL.
+
+| Service | Vai trò & Chức năng (Role) | Database Container |
+|---------|------------------|----------|
+| `customer-service` | Quản lý khách hàng, đăng nhập, phân quyền | `customer-db` |
+| `product-service` | Quản lý thông tin Sách & Tồn kho | `product-db` |
+| `catalog-service` | Quản lý Cây danh mục (Categories) | `catalog-db` |
+| `cart-service` | Quản lý Giỏ hàng của người dùng | `cart-db` |
+| `order-service` | Điều phối Checkout tĩnh, tương tác với Pay/Ship/Cart | `order-db` |
+| `pay-service` | Xử lý giao dịch thanh toán & hóa đơn (Mock) | `pay-db` |
+| `ship-service` | Quản lý vận chuyển & Mã tracking theo dõi | `ship-db` |
+| `comment-rate-service` | Nhận xét, đánh giá sản phẩm | `comment-rate-db` |
+| `recommender-ai-service`| Đề xuất SP (AI Collaborative Filtering) | `recommender-db` |
+| `staff-service` | Quản lý Nhân sự & Phân quyền nội bộ | `staff-db` |
+| `manager-service` | Báo cáo doanh thu, Thống kê Quản trị | `manager-db` |
+| `rag-service` | RAG Chatbot (Sử dụng LLM) tìm hiểu sách | Không dùng CSDL riêng |
 
 ---
 
-## 2) Danh sách services trong hệ thống
+## ⚙️ 3. Tương tác Nghiệp vụ Chính (Orchestration & Choreography)
 
-### Service công khai cổng ra host
-
-| Service | Port host | Mô tả |
-|---|---:|---|
-| `frontend` | `3000` | UI người dùng |
-| `api-gateway` | `8000` | API entrypoint duy nhất |
-
-### Service nội bộ (chạy trong Docker network)
-
-| Service | Vai trò chính | DB riêng |
-|---|---|---|
-| `customer-service` | Quản lý khách hàng, auth khách hàng | `customer-db` |
-| `product-service` | Sản phẩm + tồn kho | `product-db` |
-| `catalog-service` | Danh mục sách | `catalog-db` |
-| `cart-service` | Giỏ hàng | `cart-db` |
-| `order-service` | Đơn hàng, điều phối payment + shipment | `order-db` |
-| `pay-service` | Thanh toán | `pay-db` |
-| `ship-service` | Vận chuyển, tracking | `ship-db` |
-| `comment-rate-service` | Đánh giá + bình luận | `comment-rate-db` |
-| `recommender-ai-service` | Gợi ý sách (behavior + rating signal) | `recommender-db` |
-| `staff-service` | Nhân viên, nghiệp vụ kho | `staff-db` |
-| `manager-service` | Quản trị, báo cáo tổng hợp | `manager-db` |
-| `rag-service` | Chat RAG tư vấn sách | Không dùng PostgreSQL riêng |
+- **Chu trình Đặt hàng (Checkout):**
+  `order-service` lấy Data từ `cart-service` ➔ Khởi tạo Thanh toán `pay-service` ➔ Khởi tạo Vận chuyển `ship-service` ➔ Xóa dữ liệu trong `cart-service`.
+- **Hệ thống Gợi ý (Recommendation):**
+  `recommender-ai-service` sử dụng lịch sử mua hàng từ `order-service` ➔ Tính toán gợi ý bằng User-Based Collaborative Filtering (kết hợp tín hiệu rating) hoặc theo độ phổ biến (Popularity Fallback) nếu là User mới.
+- **RAG Chat Assistant:** 
+  Từ Client qua `api-gateway` (`/api/rag/chat`) ➔ Gọi LLM Model thông qua Google API sinh câu trả lời.
 
 ---
 
-## 3) Luồng nghiệp vụ chính
+## 🏃 4. Hướng dẫn Khởi chạy (Quick Start)
 
-- **Đăng ký khách hàng**: `customer-service` có thể khởi tạo cart mặc định qua `cart-service`.
-- **Tạo đơn hàng**: `order-service` gọi `cart-service` lấy item, gọi `pay-service` xử lý thanh toán, gọi `ship-service` tạo vận chuyển, sau đó clear cart.
-- **Gợi ý sản phẩm**: `recommender-ai-service` lấy lịch sử mua từ `order-service`, kết hợp tín hiệu rating từ `comment-rate-service`.
-- **RAG chat**: Frontend gọi `api-gateway` tới `/api/rag/chat` để nhận trả lời từ `rag-service`.
+### Yêu cầu tiên quyết:
+- **Docker Engine & Docker Compose (v2)** hỗ trợ tối đa việc build ảo hoá.
+- *(Tùy chọn)* Python 3.10+ để sử dụng script tạo Seed data trên host.
 
----
-
-## 4) Quick Start
-
-### Yêu cầu
-
-- Docker Desktop (Docker + Compose v2)
-- (Tuỳ chọn) Python 3.10+ để chạy script seed ngoài container
-
-### Chạy toàn bộ hệ thống
-
+### Khởi chạy toàn bộ hệ thống:
+1. Clone / Mở Terminal tại thư mục gốc của project.
+2. Build và khởi động 24 containers (12 Services + 11 Databases + Gateway) bằng lệnh sau:
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
+Trạng thái ban đầu có thể tốn một lúc để tải images, cài đặt thư viện (`pip install`) và khởi tạo CSDL PostgreSQL.
 
-Sau khi chạy:
-- Frontend: `http://localhost:3000`
-- API Gateway: `http://localhost:8000`
-- Health check: `http://localhost:8000/health/`
+**Các địa chỉ quan trọng:**
+- **Frontend App:** [http://localhost:3000](http://localhost:3000)
+- **API Gateway:** [http://localhost:8000](http://localhost:8000)
+- **Kiểm tra Health:** [http://localhost:8000/health/](http://localhost:8000/health/)
 
-### Dừng hệ thống
-
+### Dừng hệ thống:
 ```bash
+# Chỉ tắt container:
 docker compose down
-```
 
-Xoá luôn volume DB:
-
-```bash
+# Xóa toàn bộ Data (Database Volumes):
 docker compose down -v
 ```
 
 ---
 
-## 5) Seed dữ liệu mẫu
+## 🌱 5. Seed Dữ Liệu (Tạo Dữ Liệu Mẫu)
 
-Từ thư mục gốc project:
-
+Script seed sẽ giúp bạn tạo sẵn categories, thông tin sản phẩm mẫu (dựa vào `books_data.csv`), tài khoản Khách hàng / Nhân sự.
+Tại thư mục gốc, gõ lệnh:
 ```bash
 python scripts/seed_data.py
 ```
-
-Script sẽ tạo:
-- 7 categories
-- 10 products mẫu
-- tài khoản admin/staff
-- 10 customer mẫu
-
-Tham khảo thêm: `scripts/README.md`
+*(Chi tiết về Seed script tại `scripts/README.md`)*
 
 ---
 
-## 6) API entrypoint (qua gateway)
+## 📡 6. Cấu trúc API Endpoints (Thông qua Gateway)
 
-Tất cả API đi qua gateway `http://localhost:8000` với format:
+Mọi request Web/Mobile gọi tới hệ thống thông qua Entrypoint duy nhất trên cổng `8000`:
+`http://localhost:8000/api/<resource-prefix>/<path>`
 
-```text
-/api/<service>/<path>
-```
+<details>
+<summary><b>Click để xem danh sách Nhóm API chính</b></summary>
 
-Một số nhóm endpoint thường dùng:
+| Tiền tố đường dẫn (Prefix) | Trỏ đến Service | Yêu cầu xác thực |
+|--------|---------------|------------------|
+| `/api/customers/...` | `customer-service` | Login/Profile/Register |
+| `/api/products/...` | `product-service` | Public - Get/List |
+| `/api/catalog/...` | `catalog-service` | Public |
+| `/api/cart/...` | `cart-service` | Thường kết hợp Customer ID |
+| `/api/orders/...` | `order-service` | Sinh đơn checkout |
+| `/api/payments/...` | `pay-service` | - |
+| `/api/shipments/...` | `ship-service` | - |
+| `/api/reviews/...` | `comment-rate-service` | Cần xác thực Customer |
+| `/api/recommendations/...`| `recommender-ai-service`| Lấy theo Customer ID |
+| `/api/staff/...` | `staff-service` | User đăng nhập Staff |
+| `/api/managers/...` | `manager-service` | User đăng nhập Manager |
+| `/api/rag/chat` | `rag-service` | Endpoint Post chat JSON |
 
-| Nhóm | Prefix |
-|---|---|
-| Customers | `/api/customers/` |
-| Products | `/api/products/` |
-| Catalog | `/api/catalog/` |
-| Cart | `/api/cart/` |
-| Orders | `/api/orders/` |
-| Payments | `/api/payments/` |
-| Shipments | `/api/shipments/` |
-| Reviews | `/api/reviews/` |
-| Recommendations | `/api/recommendations/` |
-| Staff | `/api/staff/` |
-| Managers | `/api/managers/` |
-| RAG Chat | `/api/rag/chat` |
-
-Ví dụ health:
-
-```bash
-curl http://localhost:8000/health/
-```
-
-Ví dụ chat RAG:
-
-```bash
-curl -X POST http://localhost:8000/api/rag/chat \
-  -H "Content-Type: application/json" \
-  -d "{\"message\":\"Gợi ý cho tôi vài sách clean architecture\"}"
-```
+</details>
 
 ---
 
-## 7) Cấu trúc thư mục
+## 📁 7. Cấu trúc Thư mục (Directory Structure)
 
 ```text
 microservice-bookstore/
-├── docker-compose.yml
-├── README.md
-├── frontend/
-├── api-gateway/
-├── customer-service/
-├── product-service/
-├── catalog-service/
-├── cart-service/
-├── order-service/
-├── pay-service/
-├── ship-service/
-├── comment-rate-service/
-├── recommender-ai-service/
-├── staff-service/
-├── manager-service/
-├── rag-service/
-└── scripts/
+├── 🐳 docker-compose.yml       # Định nghĩa tập trung các Config Server
+├── 🐳 docker-compose.override.yml
+├── 🌍 frontend/                # React App Source
+├── 🚪 api-gateway/             # Config Gateway định tuyến 
+├── 📦 product-service/         # App quản trị Sản phẩm (Django)
+├── 👤 customer-service/        # App quản trị Auth Khách (Django)
+├── 🤖 recommender-ai-service/  # Source Engine ML/Collaborative Filter
+├── ... (Các Microservices Back-end khác tương tự)
+└── 📜 scripts/                 # Công cụ CLI (Seed data, Setup)
 ```
 
 ---
 
-## 8) Biến môi trường quan trọng
+## 🔧 8. Biến Môi trường và TroubleShooting
 
-Phần lớn service sử dụng:
-- `DEBUG`
-- `SECRET_KEY`
-- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`
-- `*_SERVICE_URL` để gọi service khác
+### Môi trường
+Các file config chủ yếu được nhúng Environment Variable trong `docker-compose.yml`.
+> *Lưu ý: Đối với `rag-service`, hãy đảm bảo nhập biến `GOOGLE_API_KEY` của bạn thì Frontend Chatbot mới hoạt động chính xác.*
 
-Riêng `rag-service` cần:
-- `GOOGLE_API_KEY`
-
-Khuyến nghị:
-- Không hardcode key thật trong `docker-compose.yml`.
-- Dùng `.env` hoặc secret manager ở môi trường production.
+### Xử lý sự cố thường gặp (Troubleshoot)
+- **Lỗi `503 Service Unavailable / Gateway Timeout`:** Gateway đã chạy xong nhưng các services con phía sau chưa kịp Start/Healthy. Hãy check tiến trình qua `docker compose ps` và đợi khoảng 1-2 phút rồi refresh lại app.
+- **Frontend gọi API bị lỗi CORS:** Đảm bảo trên cổng `3000`, `axios`/`fetch` URL được chỉ định gọi vào `http://localhost:8000`.
+- **Database Migration Error:** Nếu thay đổi DB Models dẫn tới xung đột DB state, hãy gỡ sạch volumes bằng lệnh `docker compose down -v` và chạy lại.
 
 ---
 
-## 9) Troubleshooting nhanh
-
-- `gateway` báo `503`:
-  - Kiểm tra service đích đã up chưa: `docker compose ps`
-  - Xem log: `docker compose logs -f api-gateway <service-name>`
-- Frontend không gọi được API:
-  - Kiểm tra gateway đang nghe cổng `8000`
-  - Kiểm tra prefix API trên frontend là `/api/...`
-- DB migration lỗi:
-  - Kiểm tra container DB tương ứng đã healthy
-  - Chạy lại `docker compose up --build`
-
----
-
-## 10) Production checklist (rút gọn)
-
-- Tắt debug (`DEBUG=False`)
-- Thay toàn bộ secret/key mặc định
-- Giới hạn CORS theo domain cụ thể
-- Thêm auth nội bộ service-to-service
-- Bổ sung logging + tracing tập trung
-- Thiết lập CI/CD + backup DB
-
-# Microservice BookStore
-
-A production-ready, fully Dockerized BookStore system built with **Django REST Framework**, following clean microservice architecture principles. Each service owns its data, communicates over HTTP REST, and is deployed as an independent container.
-
----
-
-## Architecture Diagram
-
-```
-                        ┌─────────────────────────────┐
-                        │         CLIENT / Browser     │
-                        └──────────────┬──────────────┘
-                                       │ HTTP :8000
-                        ┌──────────────▼──────────────┐
-                        │         API  GATEWAY         │
-                        │   /api/<service>/<path>      │
-                        │   Reverse proxy (requests)   │
-                        └──┬────┬────┬────┬────┬───┬──┘
-                           │    │    │    │    │   │
-          ┌────────────────┘    │    │    │    │   └─────────────────┐
-          │         ┌───────────┘    │    │    └──────────┐          │
-          ▼         ▼                ▼    ▼               ▼          ▼
- ┌──────────────┐ ┌────────────┐ ┌──────────┐ ┌──────────────┐ ┌──────────┐
- │  customer-   │ │   book-    │ │ catalog- │ │    cart-     │ │  order-  │
- │  service     │ │  service   │ │ service  │ │   service    │ │ service  │
- │  :8001       │ │  :8002     │ │  :8003   │ │   :8004      │ │  :8005   │
- └──────┬───────┘ └─────┬──────┘ └────┬─────┘ └──────┬───────┘ └────┬─────┘
-        │               │             │               │               │
- ┌──────▼──┐     ┌──────▼──┐   ┌─────▼──┐    ┌──────▼──┐    ┌──────▼──┐
- │customer │     │  book   │   │catalog │    │  cart   │    │  order  │
- │   DB    │     │   DB    │   │   DB   │    │   DB    │    │   DB    │
- └─────────┘     └─────────┘   └────────┘    └─────────┘    └─────────┘
-
-          ┌────────────┐ ┌──────────────┐ ┌───────────────────┐
-          │   pay-     │ │    ship-     │ │  comment-rate-    │
-          │  service   │ │   service   │ │     service       │
-          │  :8006     │ │   :8007     │ │     :8008         │
-          └─────┬──────┘ └──────┬───────┘ └────────┬──────────┘
-                │               │                  │
-          ┌─────▼──┐    ┌───────▼──┐       ┌───────▼──┐
-          │  pay   │    │  ship    │       │comment   │
-          │   DB   │    │   DB     │       │  rate DB │
-          └────────┘    └──────────┘       └──────────┘
-
-          ┌──────────────────┐ ┌──────────────┐ ┌───────────────┐
-          │ recommender-ai-  │ │    staff-    │ │   manager-   │
-          │    service       │ │   service    │ │   service    │
-          │    :8009         │ │   :8010      │ │   :8011      │
-          └────────┬─────────┘ └──────┬───────┘ └──────┬───────┘
-                   │                  │                 │
-          ┌────────▼──┐       ┌───────▼──┐     ┌───────▼──┐
-          │recommender│       │  staff   │     │ manager  │
-          │    DB     │       │   DB     │     │   DB     │
-          └───────────┘       └──────────┘     └──────────┘
-```
-
----
-
-## Inter-Service Communication
-
-```
-Customer Registration:
-  customer-service ──POST──▶ cart-service/internal/carts/create/
-
-Create Order:
-  order-service ──GET──▶  cart-service/internal/carts/{id}/
-  order-service ──POST──▶ pay-service/internal/payments/process/
-  order-service ──POST──▶ ship-service/internal/shipments/create/
-  order-service ──DELETE──▶ cart-service/api/cart/{id}/clear/
-
-Recommendations:
-  recommender-ai-service ──GET──▶ order-service/internal/orders/customer/{id}/history/
-  recommender-ai-service ──POST──▶ product-service/internal/products/bulk/
-
-Manager Reports:
-  manager-service ──GET──▶ order-service/api/orders/
-  manager-service ──GET──▶ staff-service/internal/staff/
-  manager-service ──GET──▶ customer-service/internal/customers/{id}/
-
-Staff Inventory:
-  staff-service ──PATCH──▶ product-service/api/products/{id}/inventory/
-```
-
----
-
-## Database Schema
-
-### customer-service
-```
-customers
-  id           BIGSERIAL PK
-  email        VARCHAR UNIQUE
-  password     VARCHAR (hashed)
-  first_name   VARCHAR
-  last_name    VARCHAR
-  phone        VARCHAR
-  address      TEXT
-  is_active    BOOLEAN
-  created_at   TIMESTAMP
-  updated_at   TIMESTAMP
-```
-
-### product-service
-```
-products
-  id               BIGSERIAL PK
-  title            VARCHAR
-  author           VARCHAR
-  isbn             VARCHAR(13) UNIQUE
-  description      TEXT
-  price            DECIMAL(10,2)
-  cover_image      VARCHAR (URL)
-  category_id      INT  (FK → catalog-service)
-  published_date   DATE
-  language         VARCHAR
-  pages            INT
-  is_active        BOOLEAN
-  created_at       TIMESTAMP
-
-product_inventory
-  id                BIGSERIAL PK
-  product_id        INT UNIQUE FK → products
-  stock_quantity    INT
-  warehouse_location VARCHAR
-  updated_at        TIMESTAMP
-```
-
-### catalog-service
-```
-categories
-  id          BIGSERIAL PK
-  name        VARCHAR UNIQUE
-  slug        VARCHAR UNIQUE
-  description TEXT
-  parent_id   INT FK → categories (self-ref)
-  created_at  TIMESTAMP
-```
-
-### cart-service
-```
-carts
-  id          BIGSERIAL PK
-  customer_id INT UNIQUE  (FK → customer-service)
-  created_at  TIMESTAMP
-  updated_at  TIMESTAMP
-
-cart_items
-  id          BIGSERIAL PK
-  cart_id     INT FK → carts
-  product_id  INT  (FK → product-service)
-  quantity    INT
-  unit_price  DECIMAL(10,2)
-  added_at    TIMESTAMP
-  UNIQUE(cart_id, product_id)
-```
-
-### order-service
-```
-orders
-  id               BIGSERIAL PK
-  customer_id      INT  (FK → customer-service)
-  status           VARCHAR  [PENDING|CONFIRMED|PAID|SHIPPED|DELIVERED|CANCELLED|REFUNDED]
-  total_amount     DECIMAL(12,2)
-  shipping_address TEXT
-  payment_method   VARCHAR
-  created_at       TIMESTAMP
-  updated_at       TIMESTAMP
-
-order_items
-  id          BIGSERIAL PK
-  order_id    INT FK → orders
-  product_id  INT  (FK → product-service)
-  product_title  VARCHAR
-  quantity    INT
-  unit_price  DECIMAL(10,2)
-```
-
-### pay-service
-```
-payments
-  id             BIGSERIAL PK
-  order_id       INT UNIQUE  (FK → order-service)
-  customer_id    INT  (FK → customer-service)
-  amount         DECIMAL(12,2)
-  status         VARCHAR  [PENDING|COMPLETED|FAILED|REFUNDED]
-  method         VARCHAR  [CREDIT_CARD|DEBIT_CARD|PAYPAL|BANK_TRANSFER]
-  transaction_id UUID UNIQUE
-  created_at     TIMESTAMP
-  updated_at     TIMESTAMP
-```
-
-### ship-service
-```
-shipments
-  id                BIGSERIAL PK
-  order_id          INT UNIQUE  (FK → order-service)
-  customer_id       INT  (FK → customer-service)
-  shipping_address  TEXT
-  status            VARCHAR  [PENDING|PROCESSING|SHIPPED|IN_TRANSIT|DELIVERED|RETURNED]
-  tracking_number   UUID UNIQUE
-  carrier           VARCHAR
-  estimated_delivery DATE
-  created_at        TIMESTAMP
-  updated_at        TIMESTAMP
-```
-
-### comment-rate-service
-```
-ratings
-  id          BIGSERIAL PK
-  product_id  INT  (FK → product-service)
-  customer_id INT  (FK → customer-service)
-  score       SMALLINT  (1-5)
-  created_at  TIMESTAMP
-  updated_at  TIMESTAMP
-  UNIQUE(product_id, customer_id)
-
-comments
-  id          BIGSERIAL PK
-  product_id  INT  (FK → product-service)
-  customer_id INT  (FK → customer-service)
-  content     TEXT
-  is_approved BOOLEAN
-  created_at  TIMESTAMP
-```
-
-### recommender-ai-service
-```
-recommendation_cache
-  id          BIGSERIAL PK
-  customer_id INT
-  product_id  INT
-  score       FLOAT
-  strategy    VARCHAR
-  created_at  TIMESTAMP
-  UNIQUE(customer_id, product_id)
-```
-
-### staff-service
-```
-staff_members
-  id         BIGSERIAL PK
-  email      VARCHAR UNIQUE
-  password   VARCHAR (hashed)
-  first_name VARCHAR
-  last_name  VARCHAR
-  role       VARCHAR  [WAREHOUSE|SALES|SUPPORT|MANAGER]
-  is_active  BOOLEAN
-  is_admin   BOOLEAN
-  created_at TIMESTAMP
-  updated_at TIMESTAMP
-```
-
-### manager-service
-```
-managers
-  id         BIGSERIAL PK
-  email      VARCHAR UNIQUE
-  password   VARCHAR (hashed)
-  first_name VARCHAR
-  last_name  VARCHAR
-  is_active  BOOLEAN
-  created_at TIMESTAMP
-```
-
----
-
-## REST API Reference
-
-All routes below are called through the **API Gateway** at `http://localhost:8000`.
-
-### Customer Service  `/api/customers/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/customers/register/` | None | Register new customer |
-| POST | `/api/customers/login/` | None | Login, get JWT tokens |
-| GET | `/api/customers/profile/` | JWT | Get own profile |
-| PUT | `/api/customers/profile/` | JWT | Update own profile |
-| GET | `/api/customers/<id>/` | JWT | Get customer by ID |
-
-### Product Service  `/api/products/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/products/` | None | List products (supports ?search=, ?category_id=, ?min_price=, ?max_price=, ?page=) |
-| GET | `/api/products/<id>/` | None | Get product detail |
-| POST | `/api/products/` | None | Create a product |
-| PUT | `/api/products/<id>/` | None | Update product |
-| DELETE | `/api/products/<id>/` | None | Soft-delete product |
-| PATCH | `/api/products/<id>/inventory/` | None | Adjust stock (delta field) |
-
-### Catalog Service  `/api/catalog/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/catalog/categories/` | None | List all categories (with children) |
-| GET | `/api/catalog/categories/<id>/` | None | Category detail |
-| POST | `/api/catalog/categories/` | None | Create category |
-| PUT | `/api/catalog/categories/<id>/` | None | Update category |
-| DELETE | `/api/catalog/categories/<id>/` | None | Delete category |
-
-### Cart Service  `/api/cart/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/cart/<customer_id>/` | None | Get cart |
-| POST | `/api/cart/<customer_id>/items/` | None | Add item to cart |
-| PUT | `/api/cart/<customer_id>/items/<item_id>/` | None | Update item quantity |
-| DELETE | `/api/cart/<customer_id>/items/<item_id>/` | None | Remove item from cart |
-| DELETE | `/api/cart/<customer_id>/clear/` | None | Clear cart |
-
-### Order Service  `/api/orders/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/orders/?customer_id=<id>` | None | List orders for customer |
-| POST | `/api/orders/` | None | Create order from cart (triggers pay + ship) |
-| GET | `/api/orders/<id>/` | None | Get order detail |
-
-### Payment Service  `/api/payments/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/payments/<id>/` | None | Get payment by ID |
-| GET | `/api/payments/order/<order_id>/` | None | Get payment by order |
-
-### Shipment Service  `/api/shipments/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/shipments/<id>/` | None | Get shipment detail |
-| GET | `/api/shipments/order/<order_id>/` | None | Get shipment by order |
-| PATCH | `/api/shipments/<id>/status/` | None | Update shipment status |
-| GET | `/api/shipments/track/<tracking_number>/` | None | Track by tracking number |
-
-### Reviews Service  `/api/reviews/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/reviews/ratings/?product_id=<id>` | None | Get ratings for a product |
-| POST | `/api/reviews/ratings/` | None | Submit/update a rating |
-| GET | `/api/reviews/ratings/product/<id>/summary/` | None | Rating summary for a product |
-| GET | `/api/reviews/comments/?product_id=<id>` | None | Comments for a product |
-| POST | `/api/reviews/comments/` | None | Post a comment |
-| DELETE | `/api/reviews/comments/<id>/` | None | Delete a comment |
-
-### Recommendations Service  `/api/recommendations/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/api/recommendations/<customer_id>/` | None | Get personalized product recommendations |
-| GET | `/api/recommendations/<customer_id>/?refresh=true` | None | Force-recompute recommendations |
-
-### Staff Service  `/api/staff/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/staff/register/` | None | Register staff member |
-| POST | `/api/staff/login/` | None | Login, get JWT |
-| GET | `/api/staff/` | JWT | List all active staff |
-| GET | `/api/staff/<id>/` | JWT | Get staff member |
-| PUT | `/api/staff/<id>/` | JWT | Update staff member |
-| DELETE | `/api/staff/<id>/` | JWT | Deactivate staff member |
-| PATCH | `/api/staff/inventory/<product_id>/` | JWT | Adjust product stock |
-
-### Manager Service  `/api/managers/`
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/managers/register/` | None | Register manager |
-| POST | `/api/managers/login/` | None | Login, get JWT |
-| GET | `/api/managers/reports/sales/` | JWT | Sales/revenue report |
-| GET | `/api/managers/reports/staff/` | JWT | Staff roster report |
-| GET | `/api/managers/reports/customers/?id=<id>` | JWT | Customer lookup |
-
-### Gateway Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health/` | Health check for all downstream services |
-
----
-
-## Example Request/Response
-
-### POST /api/customers/register/
-```json
-// Request
-{
-  "email": "alice@example.com",
-  "password": "securePass123",
-  "password_confirm": "securePass123",
-  "first_name": "Alice",
-  "last_name": "Smith",
-  "phone": "+1-555-0100",
-  "address": "123 Main St, Springfield"
-}
-
-// Response 201
-{
-  "customer": {
-    "id": 1,
-    "email": "alice@example.com",
-    "first_name": "Alice",
-    "last_name": "Smith",
-    "phone": "+1-555-0100",
-    "address": "123 Main St, Springfield",
-    "created_at": "2026-03-12T10:00:00Z"
-  },
-  "tokens": {
-    "refresh": "eyJ...",
-    "access": "eyJ..."
-  }
-}
-```
-
-### POST /api/products/
-```json
-// Request
-{
-  "title": "Clean Architecture",
-  "author": "Robert C. Martin",
-  "isbn": "9780134494166",
-  "price": "35.99",
-  "category_id": 2,
-  "description": "A guide to software architecture.",
-  "language": "English",
-  "pages": 432,
-  "stock_quantity": 50
-}
-
-// Response 201
-{
-  "id": 7,
-  "title": "Clean Architecture",
-  "author": "Robert C. Martin",
-  "isbn": "9780134494166",
-  "price": "35.99",
-  "category_id": 2,
-  "inventory": { "stock_quantity": 50, "warehouse_location": "" },
-  "created_at": "2026-03-12T10:05:00Z"
-}
-```
-
-### POST /api/cart/1/items/
-```json
-// Request
-{ "product_id": 7, "quantity": 2, "unit_price": "35.99" }
-
-// Response 201
-{
-  "id": 1,
-  "customer_id": 1,
-  "items": [
-    { "id": 1, "product_id": 7, "quantity": 2, "unit_price": "35.99", "subtotal": "71.98" }
-  ],
-  "total_price": "71.98"
-}
-```
-
-### POST /api/orders/
-```json
-// Request
-{
-  "customer_id": 1,
-  "shipping_address": "123 Main St, Springfield",
-  "payment_method": "CREDIT_CARD"
-}
-
-// Response 201
-{
-  "id": 42,
-  "customer_id": 1,
-  "status": "SHIPPED",
-  "total_amount": "71.98",
-  "shipping_address": "123 Main St, Springfield",
-  "payment_method": "CREDIT_CARD",
-  "items": [
-    { "id": 1, "product_id": 7, "product_title": "Clean Architecture", "quantity": 2, "unit_price": "35.99", "subtotal": "71.98" }
-  ],
-  "created_at": "2026-03-12T10:10:00Z"
-}
-```
-
-### POST /api/reviews/ratings/
-```json
-// Request
-{ "product_id": 7, "customer_id": 1, "score": 5 }
-
-// Response 201
-{ "id": 1, "product_id": 7, "customer_id": 1, "score": 5, "created_at": "2026-03-12T10:15:00Z" }
-```
-
-### GET /api/recommendations/1/
-```json
-// Response 200
-{
-  "customer_id": 1,
-  "strategy": "collaborative_filtering",
-  "recommendations": [
-    { "product_id": 3, "score": 0.9512, "title": "The Pragmatic Programmer", "brand": "Hunt & Thomas", "price": "42.00" },
-    { "product_id": 11, "score": 0.8834, "title": "Design Patterns", "brand": "Gang of Four", "price": "49.99" }
-  ]
-}
-```
-
----
-
-## Quick Start
-
-### Prerequisites
-- Docker ≥ 24
-- Docker Compose v2
-
-### Launch the entire system
-
-```bash
-# Clone and enter the project
-git clone <repo-url>
-cd microservice-bookstore
-
-# Build and start all 23 containers (11 services + 11 DBs + gateway)
-docker compose up --build
-
-# API is now available at http://localhost:8000
-```
-
-### Verify all services are running
-```bash
-curl http://localhost:8000/health/
-```
-
-### Stop everything
-```bash
-docker compose down -v   # -v also removes volumes (DBs)
-```
-
----
-
-## Project Structure
-
-```
-microservice-bookstore/
-├── docker-compose.yml
-├── README.md
-├── api-gateway/                  # Reverse proxy — routes /api/<service>/...
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── entrypoint.sh
-│   ├── manage.py
-│   ├── config/
-│   └── proxy/
-├── customer-service/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── entrypoint.sh
-│   ├── manage.py
-│   ├── config/
-│   └── customers/
-│       ├── models.py             # Customer model (AbstractBaseUser)
-│       ├── serializers.py
-│       ├── views.py
-│       ├── urls.py
-│       ├── internal_urls.py      # Called by peer services
-│       ├── internal_views.py
-│       └── services.py           # CartServiceClient
-├── product-service/
-│   └── books/                    # Book + BookInventory models
-├── catalog-service/
-│   └── catalog/                  # Category (hierarchical)
-├── cart-service/
-│   └── cart/                     # Cart + CartItem
-├── order-service/
-│   └── orders/                   # Order + OrderItem, orchestrates pay + ship
-├── pay-service/
-│   └── payments/                 # Payment with simulated gateway
-├── ship-service/
-│   └── shipments/                # Shipment + tracking
-├── comment-rate-service/
-│   └── reviews/                  # Rating + Comment
-├── recommender-ai-service/
-│   ├── recommender/
-│   │   ├── engine.py             # Collaborative filtering + popularity fallback
-│   │   └── views.py
-│   └── requirements.txt          # Includes numpy + scikit-learn
-├── staff-service/
-│   └── staff/                    # StaffMember + inventory management
-└── manager-service/
-    └── management/               # Manager + aggregated reports
-```
-
----
-
-## AI Recommendation Engine
-
-The `recommender-ai-service` implements a two-strategy recommendation pipeline:
-
-**Strategy 1 — User-Based Collaborative Filtering:**
-1. Fetch all orders from `order-service`
-2. Build a customer × book binary purchase matrix
-3. Compute cosine similarity between the target customer and all others
-4. Recommend books purchased by similar customers but not yet by target
-
-**Strategy 2 — Popularity Fallback:**
-When the customer has no order history (cold start), returns books ranked by total purchase frequency across all customers.
-
-Results are cached in PostgreSQL to avoid recomputing on every request. Pass `?refresh=true` to force a fresh computation.
-
----
-
-## Environment Variables
-
-Each service reads configuration from environment variables (set in `docker-compose.yml`):
-
-| Variable | Description |
-|----------|-------------|
-| `SECRET_KEY` | Django secret key |
-| `DEBUG` | `True` / `False` |
-| `DB_NAME` | PostgreSQL database name |
-| `DB_USER` | PostgreSQL user |
-| `DB_PASSWORD` | PostgreSQL password |
-| `DB_HOST` | PostgreSQL host (Docker service name) |
-| `DB_PORT` | PostgreSQL port (default `5432`) |
-| `*_SERVICE_URL` | URL to peer services |
-
----
-
-## Production Hardening Checklist
-
-- [ ] Set `DEBUG=False` and use strong `SECRET_KEY` values
-- [ ] Add service-to-service API key authentication (X-Internal-Token header)
-- [ ] Replace `CORS_ALLOW_ALL_ORIGINS = True` with explicit allowed origins
-- [ ] Add rate limiting (e.g., `djangorestframework-throttling`)
-- [ ] Add centralized logging (ELK stack or CloudWatch)
-- [ ] Add distributed tracing (OpenTelemetry)
-- [ ] Add a message broker (Celery + Redis) for async inter-service events
-- [ ] Configure PostgreSQL connection pooling (PgBouncer)
-- [ ] Add TLS termination at the gateway
-- [ ] Use Kubernetes for orchestration at scale
+## ✅ 9. Production Checklist (Giai đoạn Triển khai mở rộng)
+
+- [ ] Tắt Flag `DEBUG=False` mặc định của Django trong môi trường triển khai thực tế.
+- [ ] Bảo vệ endpoints giao tiếp dạng *Service-to-Service*. Hiện tại đang sử dụng các API Internal gọi trên HTTP thông thường.
+- [ ] Implement Caching phân tán (Redis).
+- [ ] Sử dụng Event-Driven/Message Broker (RabbitMQ hoặc Kafka) cho luồng tương tác Đơn hàng thay vì gọi API đồng bộ.
+- [ ] Thiết lập Monitoring với ELK Stack và Distributed Tracing.
+
+**Tác giả / Duy trì:** Dự án Booking/E-Commerce Microservices.
