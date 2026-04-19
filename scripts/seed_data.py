@@ -256,6 +256,7 @@ CUSTOMERS = [
     {"email": "user10@example.com", "first_name": "Jack", "last_name": "Ly", "phone": "0990123456", "address": "707 Quy Nhon"},
 ]
 
+# pass: Password123!
 
 def run_exec(service: str, cmd: str) -> bool:
     """Run command in Docker Compose service. Returns True on success."""
@@ -384,6 +385,64 @@ print("Customers:", Customer.objects.count())
     return run_exec("customer-service", code)
 
 
+def seed_orders():
+    print("6. Creating sample orders for customers...")
+    products_mini = [{"id": i+1, "title": p["title"], "price": p["price"]} for i, p in enumerate(SAMPLE_PRODUCTS)]
+    products_json = json.dumps(products_mini)
+    
+    code = f"""
+from orders.models import Order, OrderItem
+from decimal import Decimal
+import json
+import random
+
+if Order.objects.exists():
+    print("Deleting old orders to create fresh ones...")
+    Order.objects.all().delete()
+
+products = json.loads('''{products_json}''')
+statuses = ["PENDING", "CONFIRMED", "PAID", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]
+addresses = [
+    "123 Hanoi", "456 Ho Chi Minh", "789 Da Nang", "101 Can Tho", "202 Hue",
+    "303 Nha Trang", "404 Hai Phong", "505 Vung Tau", "606 Dalat", "707 Quy Nhon"
+]
+orders_created = 0
+for cid in range(1, 11):
+    num_orders = random.randint(6, 10)
+    for _ in range(num_orders):
+        status = random.choice(statuses)
+        address = addresses[cid - 1]
+        order = Order.objects.create(
+            customer_id=cid,
+            status=status,
+            total_amount=0,
+            shipping_address=address,
+            payment_method=random.choice(["CREDIT_CARD", "PAYPAL", "CASH_ON_DELIVERY"])
+        )
+        
+        total = Decimal('0.00')
+        num_items = random.randint(1, 4)
+        items = random.sample(products, num_items)
+        for item in items:
+            qty = random.randint(1, 3)
+            price = Decimal(str(item["price"]))
+            total += price * qty
+            OrderItem.objects.create(
+                order=order,
+                product_id=item["id"],
+                product_title=item["title"],
+                quantity=qty,
+                unit_price=price
+            )
+        order.total_amount = total
+        order.save()
+        orders_created += 1
+        
+print("Orders created:", orders_created)
+"""
+    return run_exec("order-service", code)
+
+
 def main():
     print("=" * 50)
     print("Ecommerce Store Seed Data Script")
@@ -396,6 +455,7 @@ def main():
     ok &= seed_admin()
     ok &= seed_staff()
     ok &= seed_customers()
+    ok &= seed_orders()
 
     print()
     if ok:
@@ -403,6 +463,7 @@ def main():
         print("  - Admin:  admin@store.com / " + DEFAULT_PASSWORD)
         print("  - Staff:  staff@store.com / " + DEFAULT_PASSWORD)
         print("  - Users:  user1@example.com ... user10@example.com / " + DEFAULT_PASSWORD)
+        print("  - Sample orders created for users!")
     else:
         print("Some steps failed. Check errors above.")
         sys.exit(1)
