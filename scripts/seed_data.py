@@ -449,6 +449,15 @@ def main():
     print("=" * 50)
     print("Ensure Docker Compose is running: docker compose up -d")
     print()
+    print(
+        "Tip — xóa hết dữ liệu DB Docker rồi seed lại từ đầu (dev): "
+        "docker compose down -v && docker compose up -d"
+    )
+    print(
+        "      Sau đó chạy lại script này. Neo4j không nằm trong Postgres: "
+        "POST http://localhost:8000/api/graph-rag/sync/ (hoặc xóa graph trong Neo4j Browser)."
+    )
+    print()
 
     ok = True
     ok &= seed_products()
