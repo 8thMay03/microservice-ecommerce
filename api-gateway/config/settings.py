@@ -57,6 +57,7 @@ SERVICE_REGISTRY = {
     "staff":           config("STAFF_SERVICE_URL",        default="http://staff-service:8000"),
     "managers":        config("MANAGER_SERVICE_URL",      default="http://manager-service:8000"),
     "rag":             config("RAG_SERVICE_URL",          default="http://rag-service:8000"),
+    "graph-rag":       config("GRAPH_RAG_SERVICE_URL",   default="http://graph-rag-service:8000"),
 }
 
 # Passthrough headers (exclude hop-by-hop)

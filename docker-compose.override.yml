@@ -28,3 +28,4 @@ services:
       - staff-service
       - manager-service
       - rag-service
+      - graph-rag-service
