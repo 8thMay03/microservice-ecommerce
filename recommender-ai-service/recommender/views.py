@@ -6,7 +6,7 @@ from rest_framework import status
 from django.conf import settings
 
 from .engine import get_recommendations, item_based_similar
-from .models import RecommendationCache
+from .models import CustomerBehaviorEvent, RecommendationCache
 from .analytics import build_overview
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,39 @@ def _recommendation_payload_rows(pairs, product_details):
             "product_type": detail.get("product_type", ""),
         })
     return rows
+
+
+class BehaviorEventView(APIView):
+    """
+    POST /api/recommendations/events/
+
+    Records storefront signals for behavior-aware model training.
+    Body: {"customer_id": int, "product_id": int, "event_type": "view"|"click"|"add_to_cart"}
+    """
+
+    def post(self, request):
+        body = request.data
+        try:
+            customer_id = int(body["customer_id"])
+            product_id = int(body["product_id"])
+        except (KeyError, TypeError, ValueError):
+            return Response(
+                {"error": "customer_id and product_id are required integers."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        raw = str(body.get("event_type") or "").strip().lower()
+        allowed = {c[0] for c in CustomerBehaviorEvent.EventType.choices}
+        if raw not in allowed:
+            return Response(
+                {"error": "event_type must be one of: view, click, add_to_cart."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        CustomerBehaviorEvent.objects.create(
+            customer_id=customer_id,
+            product_id=product_id,
+            event_type=raw,
+        )
+        return Response({"ok": True}, status=status.HTTP_201_CREATED)
 
 
 class RecommendationView(APIView):

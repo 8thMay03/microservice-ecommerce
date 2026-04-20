@@ -3,12 +3,13 @@ from django.core.management.base import BaseCommand
 
 from recommender.engine import _fetch_all_orders
 from recommender.model_behavior import clear_predictor_cache, train_and_save
+from recommender.models import CustomerBehaviorEvent
 
 
 class Command(BaseCommand):
     help = (
-        "Train the deep learning behavior model (NCF) from order-service history "
-        "and save weights to BEHAVIOR_MODEL_PATH."
+        "Train the deep learning behavior model (NCF) from completed orders plus "
+        "stored behavior events (view / click / add_to_cart), save to BEHAVIOR_MODEL_PATH."
     )
 
     def add_arguments(self, parser):
@@ -45,8 +46,15 @@ class Command(BaseCommand):
             return
 
         orders = _fetch_all_orders()
-        if not orders:
-            self.stderr.write("No completed orders returned from order-service.")
+        events = list(
+            CustomerBehaviorEvent.objects.values(
+                "customer_id", "product_id", "event_type"
+            )
+        )
+        if not orders and not events:
+            self.stderr.write(
+                "No completed orders from order-service and no behavior events in DB."
+            )
             return
 
         ok = train_and_save(
@@ -54,11 +62,12 @@ class Command(BaseCommand):
             save_path=path,
             epochs=options["epochs"],
             device=options["device"],
+            events=events or None,
         )
         if ok:
             clear_predictor_cache()
             self.stdout.write(self.style.SUCCESS(f"Training finished. Checkpoint: {path}"))
         else:
             self.stderr.write(
-                "Training skipped: need at least 2 customers, 2 books, and enough interactions."
+                "Training skipped: need at least 2 customers, 2 products, and enough interactions."
             )

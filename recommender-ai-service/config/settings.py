@@ -95,3 +95,11 @@ BEHAVIOR_MODEL_PATH = config(
 BEHAVIOR_DL_ENABLED = config("BEHAVIOR_DL_ENABLED", default=True, cast=bool)
 # cpu | cuda | cuda:0 | mps | auto (CUDA then MPS then CPU)
 BEHAVIOR_TORCH_DEVICE = config("BEHAVIOR_TORCH_DEVICE", default="auto")
+
+# Per-signal strength when merging into one user–item affinity (max wins). Purchase comes from orders.
+BEHAVIOR_WEIGHT_PURCHASE = config("BEHAVIOR_WEIGHT_PURCHASE", default=1.0, cast=float)
+BEHAVIOR_WEIGHT_ADD_TO_CART = config(
+    "BEHAVIOR_WEIGHT_ADD_TO_CART", default=0.75, cast=float
+)
+BEHAVIOR_WEIGHT_CLICK = config("BEHAVIOR_WEIGHT_CLICK", default=0.4, cast=float)
+BEHAVIOR_WEIGHT_VIEW = config("BEHAVIOR_WEIGHT_VIEW", default=0.15, cast=float)
