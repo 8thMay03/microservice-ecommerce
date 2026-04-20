@@ -95,3 +95,18 @@ BEHAVIOR_MODEL_PATH = config(
 BEHAVIOR_DL_ENABLED = config("BEHAVIOR_DL_ENABLED", default=True, cast=bool)
 # cpu | cuda | cuda:0 | mps | auto (CUDA then MPS then CPU)
 BEHAVIOR_TORCH_DEVICE = config("BEHAVIOR_TORCH_DEVICE", default="auto")
+
+# Sequence behavior models (next event type): RNN / LSTM / BiLSTM checkpoints
+_weights = BASE_DIR / "recommender" / "weights"
+BEHAVIOR_SEQ_RNN_PATH = config(
+    "BEHAVIOR_SEQ_RNN_PATH",
+    default=str(_weights / "sequence_behavior_rnn.pt"),
+)
+BEHAVIOR_SEQ_LSTM_PATH = config(
+    "BEHAVIOR_SEQ_LSTM_PATH",
+    default=str(_weights / "sequence_behavior_lstm.pt"),
+)
+BEHAVIOR_SEQ_BILSTM_PATH = config(
+    "BEHAVIOR_SEQ_BILSTM_PATH",
+    default=str(_weights / "sequence_behavior_bilstm.pt"),
+)
