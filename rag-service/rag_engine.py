@@ -130,25 +130,75 @@ class HybridRAG:
         results = [self.documents[idx] for idx in top_indices]
         return results
 
+    @staticmethod
+    def _build_personal_section(ctx: dict) -> str:
+        """Chuyển personal context dict → đoạn văn bản tiếng Việt cho LLM."""
+        if not ctx or not ctx.get("found"):
+            return ""
+
+        lines = []
+        name = ctx.get("name") or "Khách hàng"
+        lines.append(f"Tên khách hàng: {name}")
+
+        purchased = ctx.get("purchased_products") or []
+        if purchased:
+            items = ", ".join(
+                f"{p['title']} ({p.get('category', 'N/A')}, {p.get('times', 1)} lần)"
+                for p in purchased[:6]
+            )
+            lines.append(f"Đã mua: {items}")
+
+        viewed = ctx.get("viewed_products") or []
+        if viewed:
+            titles = ", ".join(v["title"] for v in viewed[:5])
+            lines.append(f"Đã xem/click: {titles}")
+
+        fav = ctx.get("favourite_categories") or []
+        if fav:
+            lines.append(f"Danh mục yêu thích: {', '.join(fav)}")
+
+        collab = ctx.get("collaborative_suggestions") or []
+        if collab:
+            lines.append(f"Khách tương tự cũng mua: {', '.join(collab[:4])}")
+
+        return "\n".join(lines)
+
     def chat(self, user_message: str):
+        return self.chat_with_context(user_message, personal_context=None)
+
+    def chat_with_context(self, user_message: str, personal_context: dict | None = None):
         if not GOOGLE_API_KEY:
             return "Xin lỗi, Server chưa được cấu hình GOOGLE_API_KEY. Quản trị viên vui lòng đặt biến trong file .env ở thư mục gốc project (xem .env.example)."
-            
-        # Lấy ngữ cảnh (Context Retrieval)
+
+        # Lấy ngữ cảnh kiến thức tĩnh (Knowledge Base Retrieval)
         retrieved_contexts = self.search_hybrid(user_message, top_k=3)
         context_str = "\n\n".join([f"- {c}" for c in retrieved_contexts])
-        
-        # Xây dựng Prompt (Augmented Generation)
+
+        # Xây dựng phần cá nhân hoá (nếu có)
+        personal_section = self._build_personal_section(personal_context)
+        if personal_section:
+            personal_block = f"""--- THÔNG TIN CÁ NHÂN HOÁ KHÁCH HÀNG ---
+{personal_section}
+
+"""
+            greeting_hint = (
+                f"Hãy gọi tên khách hàng ({personal_context.get('name', '')}) "
+                "và cá nhân hoá câu trả lời dựa trên lịch sử mua hàng / sở thích của họ khi phù hợp. "
+            )
+        else:
+            personal_block = ""
+            greeting_hint = ""
+
         prompt = f"""Bạn là một AI Assistant thân thiện có tên "Bookstore AI" làm việc tại cửa hàng "Microservice Bookstore".
-Bạn có nhiệm vụ dùng **duy nhất** các thông tin dưới đây để trả lời câu hỏi của khách hàng.
-Nếu thông tin dưới đây không có lời giải, xin hãy phản hồi tế nhị rằng bạn không có thông tin và khuyên khách hàng gọi điện qua số Hotline 1900-1234.
+{greeting_hint}Bạn được phép sử dụng cả thông tin cá nhân hoá lẫn tài liệu cửa hàng bên dưới để trả lời.
+Nếu không có thông tin phù hợp, hãy phản hồi tế nhị và khuyên khách gọi Hotline 1900-1234.
 Luôn trả lời ngắn gọn, súc tích bằng Tiếng Việt.
 
---- THÔNG TIN LẤY ĐƯỢC TỪ CƠ SỞ TÀI LIỆU CỦA CỬA HÀNG ---
+{personal_block}--- THÔNG TIN LẤY ĐƯỢC TỪ TÀI LIỆU CỬA HÀNG ---
 {context_str}
 
 ---
-Câu hỏi của khách hàng: {user_message}
+Câu hỏi: {user_message}
 Bot trả lời:"""
 
         try:

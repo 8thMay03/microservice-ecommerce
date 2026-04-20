@@ -1,11 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, User, Loader2 } from "lucide-react";
 import { ragApi } from "../api/rag";
+import { useAuth } from "../context/AuthContext";
 
 export default function ChatWidget() {
+  const { user, token } = useAuth();
+
+  // Greeting changes based on login state
+  const greeting = user?.first_name
+    ? `Chào ${user.first_name}! Tôi là Bookstore AI, trợ lý ảo của Microservice Bookstore. Tôi đã biết về lịch sử mua hàng của bạn và có thể tư vấn cá nhân hoá. Bạn cần gì hôm nay?`
+    : "Chào bạn! Tôi là Bookstore AI, trợ lý ảo của Microservice Bookstore. Tôi có thể giúp gì cho bạn hôm nay?";
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "bot", content: "Chào bạn! Tôi là Bookstore AI, trợ lý ảo của Microservice Bookstore. Tôi có thể giúp gì cho bạn hôm nay?" }
+    { role: "bot", content: greeting },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +36,9 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const response = await ragApi.chat(userMessage);
+      const customerId =
+        user?.role === "customer" && user?.id ? user.id : null;
+      const response = await ragApi.chat(userMessage, { token, customerId });
       setMessages(prev => [...prev, { role: "bot", content: response.reply }]);
     } catch (err) {
       setMessages(prev => [
@@ -65,7 +75,11 @@ export default function ChatWidget() {
             </div>
             <div>
               <h3 className="font-semibold text-sm">Bookstore AI</h3>
-              <p className="text-[11px] text-gray-300">Trả lời tự động với RAG</p>
+              <p className="text-[11px] text-gray-300">
+                {user?.role === "customer"
+                  ? `Cá nhân hoá · ${user.first_name || user.email}`
+                  : "Trả lời tự động với RAG"}
+              </p>
             </div>
           </div>
           <button 

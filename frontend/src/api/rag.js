@@ -20,9 +20,23 @@ async function request(url, options = {}, token = null) {
 }
 
 export const ragApi = {
-  chat: (message) =>
-    request("/api/rag/chat", {
-      method: "POST",
-      body: JSON.stringify({ message }),
-    }),
+  /**
+   * Send a chat message to the RAG service.
+   * @param {string} message - User's question
+   * @param {object} [opts]
+   * @param {string|null} [opts.token] - JWT access token (optional)
+   * @param {number|null} [opts.customerId] - Customer ID for personalisation (optional)
+   */
+  chat: (message, { token = null, customerId = null } = {}) =>
+    request(
+      "/api/rag/chat",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          message,
+          ...(customerId ? { customer_id: customerId } : {}),
+        }),
+      },
+      token,
+    ),
 };

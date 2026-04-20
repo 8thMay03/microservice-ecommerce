@@ -416,9 +416,14 @@ services:
 
   rag-service:
     build: ./rag-service
+    volumes:
+      - ./rag-service:/app
     environment:
       # Set in repo-root .env (not committed). Docker Compose loads .env for substitution.
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GRAPH_RAG_SERVICE_URL: "http://graph-rag-service:8000"
+    depends_on:
+      - graph-rag-service
     networks:
       - bookstore-network
     restart: unless-stopped
