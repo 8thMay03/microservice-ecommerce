@@ -4,11 +4,20 @@ import faiss
 from rank_bm25 import BM25Okapi
 import google.generativeai as genai
 from decouple import config
+import openai
 
 # Lấy API KEY từ biến môi trường (Config qua docker-compose)
 GOOGLE_API_KEY = config('GOOGLE_API_KEY', default='')
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+AI_PROVIDER = config('AI_PROVIDER', default='openai') # ưu tiên openai, fallback gemini
+
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
+if OPENAI_API_KEY:
+    from openai import OpenAI
+    openai_client = OpenAI(api_key=OPENAI_API_KEY)
+else:
+    openai_client = None
 
 class HybridRAG:
     def __init__(self, data_path="data/knowledge.txt"):
@@ -20,14 +29,43 @@ class HybridRAG:
         
         self.EMBEDDING_MODEL = 'models/embedding-001'
         self.GENERATIVE_MODEL = 'gemini-2.5-flash'  # Use a recent performant model
+        self.OPENAI_EMBEDDING_MODEL = 'text-embedding-3-small'
+        self.OPENAI_GENERATIVE_MODEL = 'gpt-4o-mini'
+        self.active_provider = self._resolve_provider(AI_PROVIDER)
         
         self.chunk_size = 400
         self.chunk_overlap = 50
         
-        if GOOGLE_API_KEY:
+        if self.active_provider in ('openai', 'gemini'):
             self.load_and_index(data_path)
         else:
-            print("Warning: GOOGLE_API_KEY is not set. RAG engine will not initialize completely.")
+            print("Warning: No API key found for OpenAI/Gemini. RAG engine will not initialize completely.")
+
+    @staticmethod
+    def _resolve_provider(preferred_provider: str) -> str | None:
+        """Chọn provider theo thứ tự ưu tiên: OpenAI trước, sau đó Gemini."""
+        preferred = (preferred_provider or '').strip().lower()
+
+        if preferred == 'openai':
+            if OPENAI_API_KEY:
+                return 'openai'
+            if GOOGLE_API_KEY:
+                return 'gemini'
+            return None
+
+        if preferred == 'gemini':
+            if GOOGLE_API_KEY:
+                return 'gemini'
+            if OPENAI_API_KEY:
+                return 'openai'
+            return None
+
+        # Cấu hình không hợp lệ: vẫn ưu tiên OpenAI trước.
+        if OPENAI_API_KEY:
+            return 'openai'
+        if GOOGLE_API_KEY:
+            return 'gemini'
+        return None
             
     def chunk_text(self, text, chunk_size, chunk_overlap):
         """Chia nhỏ văn bản thành các đoạn (chunks) có đoạn nối nhau (overlap)."""
@@ -62,13 +100,21 @@ class HybridRAG:
         
         # 2. Khởi tạo Vector Search (FAISS)
         try:
-            embed_responses = genai.embed_content(
-                model=self.EMBEDDING_MODEL,
-                content=self.documents,
-                task_type="retrieval_document",
-            )
-            # Response của Google library có dạng: {'embedding': [[...], [...]]}
-            embedding_list = embed_responses.get('embedding', embed_responses.get('embeddings', []))
+            embedding_list = []
+            if self.active_provider == 'openai' and openai_client:
+                response = openai_client.embeddings.create(
+                    input=self.documents,
+                    model=self.OPENAI_EMBEDDING_MODEL
+                )
+                embedding_list = [item.embedding for item in response.data]
+            else:
+                embed_responses = genai.embed_content(
+                    model=self.EMBEDDING_MODEL,
+                    content=self.documents,
+                    task_type="retrieval_document",
+                )
+                # Response của Google library có dạng: {'embedding': [[...], [...]]}
+                embedding_list = embed_responses.get('embedding', embed_responses.get('embeddings', []))
             
             self.embeddings = np.array(embedding_list).astype('float32')
             
@@ -82,12 +128,19 @@ class HybridRAG:
 
     def get_embedding(self, text):
         try:
-            response = genai.embed_content(
-                model=self.EMBEDDING_MODEL,
-                content=text,
-                task_type="retrieval_query",
-            )
-            emb = response.get('embedding', response.get('embeddings', []))
+            if self.active_provider == 'openai' and openai_client:
+                response = openai_client.embeddings.create(
+                    input=[text],
+                    model=self.OPENAI_EMBEDDING_MODEL
+                )
+                emb = response.data[0].embedding
+            else:
+                response = genai.embed_content(
+                    model=self.EMBEDDING_MODEL,
+                    content=text,
+                    task_type="retrieval_query",
+                )
+                emb = response.get('embedding', response.get('embeddings', []))
             return np.array(emb).astype('float32').reshape(1, -1)
         except Exception as e:
             print(f"Error getting query embedding: {e}")
@@ -167,8 +220,12 @@ class HybridRAG:
         return self.chat_with_context(user_message, personal_context=None)
 
     def chat_with_context(self, user_message: str, personal_context: dict | None = None):
-        if not GOOGLE_API_KEY:
+        if self.active_provider == 'gemini' and not GOOGLE_API_KEY:
             return "Xin lỗi, Server chưa được cấu hình GOOGLE_API_KEY. Quản trị viên vui lòng đặt biến trong file .env ở thư mục gốc project (xem .env.example)."
+        if self.active_provider == 'openai' and not OPENAI_API_KEY:
+            return "Xin lỗi, Server chưa được cấu hình OPENAI_API_KEY. Quản trị viên vui lòng đặt biến trong file .env ở thư mục gốc project."
+        if self.active_provider is None:
+            return "Xin lỗi, Server chưa được cấu hình API key cho OpenAI hoặc Gemini."
 
         # Lấy ngữ cảnh kiến thức tĩnh (Knowledge Base Retrieval)
         retrieved_contexts = self.search_hybrid(user_message, top_k=3)
@@ -202,8 +259,17 @@ Câu hỏi: {user_message}
 Bot trả lời:"""
 
         try:
-            model = genai.GenerativeModel(self.GENERATIVE_MODEL)
-            response = model.generate_content(prompt)
-            return response.text
+            if self.active_provider == 'openai' and openai_client:
+                response = openai_client.chat.completions.create(
+                    model=self.OPENAI_GENERATIVE_MODEL,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                return response.choices[0].message.content
+            else:
+                model = genai.GenerativeModel(self.GENERATIVE_MODEL)
+                response = model.generate_content(prompt)
+                return response.text
         except Exception as e:
             return f"Xin lỗi, tôi đang gặp lỗi khi kết nối với AI ({str(e)}). Bạn có thể thử lại sau."
