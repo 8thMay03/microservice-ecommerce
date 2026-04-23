@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { catalogApi } from "../api/catalog";
-import { categories as fallbackCategories } from "../data/books";
 
 function flattenCategories(arr) {
   return arr.flatMap((c) => [c, ...(c.children?.length ? flattenCategories(c.children) : [])]);
@@ -8,7 +7,6 @@ function flattenCategories(arr) {
 
 const FALLBACK = [
   { id: "all", name: "All", slug: "all" },
-  ...fallbackCategories.slice(1).map((c) => ({ id: c.id, name: c.label || c.name, slug: c.id })),
 ];
 
 export function useCatalog() {

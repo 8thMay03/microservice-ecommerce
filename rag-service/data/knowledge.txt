@@ -1,44 +1,79 @@
 === THÔNG TIN CỬA HÀNG VÀ THƯƠNG HIỆU ===
 Cửa hàng bán gì?
-Chúng tôi là cửa hàng sách online chuyên cung cấp các loại sách như: sách kinh doanh, kỹ năng, tiểu thuyết và sách thiếu nhi.
-Tất cả sản phẩm đều là sách chính hãng. Cửa hàng cam kết chất lượng in ấn và nội dung đúng với nhà xuất bản.
-Chúng tôi hỗ trợ giao hàng (ship) toàn quốc với thời gian nhanh và giá hợp lý.
+Chúng tôi là một cửa hàng thương mại điện tử đa ngành (Ecommerce Store), cung cấp đa dạng các ngành hàng bao gồm: Sách, Điện tử & Máy tính, Thời trang, Thực phẩm & Đồ uống, Nhà cửa & Đời sống, Cắm trại & Thể thao.
+Tất cả sản phẩm đều là hàng chính hãng. Chúng tôi hỗ trợ giao hàng (ship) toàn quốc với thời gian nhanh và giá hợp lý.
 
 === GIỜ LÀM VIỆC VÀ KÊNH HỖ TRỢ ===
-Tổng đài và chat hỗ trợ hoạt động từ 8h00 đến 22h00 tất cả các ngày trong tuần. Hotline: 1900-1234. Email hỗ trợ: support@microservice-bookstore.com. Ngoài giờ này bạn vẫn có thể đặt hàng trên website; yêu cầu sẽ được xử lý theo thứ tự vào ngày làm việc tiếp theo. Người phụ trách vận hành hệ thống: Nguyễn Khôi.
+Tổng đài và chat hỗ trợ hoạt động từ 8h00 đến 22h00 tất cả các ngày trong tuần. Hotline: 1900-1234. Email hỗ trợ: support@microservice-bookstore.com. Ngoài giờ này bạn vẫn có thể đặt hàng trên website; yêu cầu sẽ được xử lý theo thứ tự vào ngày làm việc tiếp theo. Người phụ trách: Nguyễn Khôi.
 
-=== CÁCH TÌM SÁCH VÀ MUA HÀNG TRÊN WEBSITE ===
-Dùng thanh Tìm kiếm (Search) ở phía trên để gõ tên sách hoặc từ khóa. Hoặc vào mục Browse để duyệt danh mục. Chọn một cuốn sách để xem mô tả, sau đó bấm Add to Cart (Thêm vào giỏ). Kiểm tra giỏ hàng, nhập địa chỉ giao hàng và hoàn tất đơn theo hướng dẫn từng bước trên trang thanh toán.
-
-=== THANH TOÁN ===
-Website hỗ trợ các phương thức thanh toán phổ biến được hiển thị tại bước thanh toán (ví dụ thẻ, ví điện tử hoặc chuyển khoản nếu được bật). Nếu giao dịch bị từ chối hoặc không hoàn tất, đơn hàng thường không được xác nhận; bạn hãy thử lại hoặc đổi phương thức thanh toán. Sau khi thanh toán thành công, hệ thống gửi email xác nhận đơn hàng (nếu bạn đã nhập email đúng). Kiểm tra cả mục Spam/Promotions nếu không thấy thư.
+=== CÁCH TÌM SẢN PHẨM VÀ MUA HÀNG TRÊN WEBSITE ===
+Dùng thanh Tìm kiếm (Search) ở phía trên để gõ tên sản phẩm, thương hiệu hoặc từ khóa. Bấm Add to Cart (Thêm vào giỏ). Kiểm tra giỏ hàng, nhập địa chỉ và hoàn tất đơn theo hướng dẫn. Nếu giao dịch bị từ chối hoặc không hoàn tất, hãy thử đổi phương thức thanh toán.
 
 === PHÍ VẬN CHUYỂN VÀ MIỄN PHÍ SHIP ===
-Đơn hàng từ 300.000 VNĐ trở lên được miễn phí giao hàng. Đơn dưới 300.000 VNĐ áp dụng phí ship mặc định 30.000 VNĐ. Phí hiển thị trước khi bạn xác nhận thanh toán. Mức phí có thể được điều chỉnh theo chương trình khuyến mãi; luôn ưu tiên số tiền hiển thị trên giỏ hàng tại thời điểm đặt.
-
-=== THỜI GIAN GIAO HÀNG VÀ KHU VỰC ===
-Thời gian giao hàng thông thường từ 2 đến 5 ngày làm việc tùy khu vực và đơn vị vận chuyển. Khu vực xa trung tâm hoặc mùa cao điểm có thể lâu hơn. Mã vận đơn hoặc trạng thái giao hàng (nếu có) sẽ được cập nhật trong tài khoản đơn hàng hoặc email thông báo.
+Đơn hàng từ $50 trở lên được miễn phí giao hàng. Đơn dưới $50 áp dụng phí ship mặc định $5. Phí hiển thị trước khi bạn xác nhận thanh toán. Thời gian giao hàng từ 2 đến 5 ngày.
 
 === ĐỔI TRẢ VÀ HOÀN TIỀN ===
-Khách hàng có thể yêu cầu đổi hoặc trả sách trong vòng 7 ngày kể từ ngày nhận hàng. Điều kiện: sách còn nguyên bao bì, tem mác, không nhăn rách, không dính bẩn, không ghi chú hoặc làm hỏng nội dung. Trường hợp lỗi do cửa hàng (giao sai, thiếu, hỏng do vận chuyển có xác minh) sẽ được hỗ trợ theo chính sách đổi trả và hoàn tiền cụ thể qua bộ phận chăm sóc khách hàng. Thời gian hoàn tiền phụ thuộc ngân hàng hoặc cổng thanh toán, thường từ vài ngày đến hai tuần làm việc.
+Khách hàng có thể yêu cầu đổi hoặc trả sản phẩm trong vòng 7 ngày kể từ ngày nhận hàng. Nhận hoàn tiền từ 3-14 ngày. Nếu thiếu hàng xin báo ngay trong 48h qua hotline.
 
-=== TÀI KHOẢN, ĐĂNG NHẬP VÀ BẢO MẬT ===
-Bạn nên đăng ký tài khoản để theo dõi đơn hàng và lưu địa chỉ giao hàng. Nếu quên mật khẩu, dùng chức năng Quên mật khẩu trên trang đăng nhập và kiểm tra email. Không chia sẻ mật khẩu cho người khác. Nếu nghi ngờ tài khoản bị truy cập trái phép, đổi mật khẩu ngay và liên hệ hotline 1900-1234.
+=== DANH SÁCH CHI TIẾT CÁC SẢN PHẨM ĐANG BÁN TRONG HỆ THỐNG ===
 
-=== MÃ GIẢM GIÁ VÀ KHUYẾN MÃI ===
-Mã giảm giá (voucher, coupon) nhập tại bước thanh toán hoặc giỏ hàng theo ô được hướng dẫn trên giao diện. Mỗi mã có điều kiện riêng: giá trị đơn tối thiểu, thời hạn, giới hạn số lần dùng. Một số mã không cộng dồn với chương trình khác; hệ thống sẽ báo nếu mã không áp dụng được. Giá sau giảm và phí ship hiển thị trước khi bạn xác nhận đơn.
+[SÁCH & TRI THỨC]
+1. Letters from M/M (Paris) - Tác giả/Hãng: M/M Paris. Giá: $39. (328 trang, Tiếng Anh). Mô tả: Khảo sát chi tiết về xưởng thiết kế M/M Paris - nơi xoá nhòa ranh giới giữa nghệ thuật và đồ họa thương mại.
+2. Clean Code - Tác giả: Robert C. Martin. Giá: $34. (464 trang). Mô tả: Cẩm nang về nghệ thuật viết phần mềm và duy trì mã nguồn sạch dành cho lập trình viên.
+3. Dieter Rams: The Complete Works - Tác giả: Klaus Klemp. Giá: $29. (480 trang). Mô tả: Chuyên đề giới thiệu về Dieter Rams và các nguyên tắc thiết kế đỉnh cao của ông.
+4. Sapiens: A Brief History of Humankind - Tác giả: Yuval Noah Harari. Giá: $22. (498 trang). Mô tả: Cuốn sách tóm tắt lịch sử tiến hóa của nhân loại.
+5. The Pragmatic Programmer - Tác giả: Andrew Hunt & David Thomas. Giá: $38. (352 trang). Mô tả: Lời khuyên cho kỹ sư phần mềm hiện đại và sự tinh thông trong nghề.
+6. Deep Work - Tác giả: Cal Newport. Giá: $18. (304 trang). Mô tả: Các quy tắc giúp tăng cường độ tập trung làm việc chuyên sâu trong thế giới xao nhãng.
+7. A Brief History of Time - Tác giả: Stephen Hawking. Giá: $17. (212 trang). Mô tả: Sách về nguồn gốc vũ trụ từ Big Bang tới hệ thống hố đen.
+8. The Martian - Tác giả: Andy Weir. Giá: $15. (387 trang). Mô tả: Tiểu thuyết sinh tồn kịch tính trên sao Hỏa bằng khoa học và kỹ thuật.
+9. Atomic Habits - Tác giả: James Clear. Giá: $19. (320 trang). Mô tả: Các thay đổi nhỏ tạo ra kết quả lớn (thói quen, tư duy).
+10. Guns, Germs, and Steel - Tác giả: Jared Diamond. Giá: $21. (528 trang). Mô tả: Luận điệu tranh cãi về địa lý ảnh hưởng thế nào đến sự hình thành văn minh loài người.
+11. Introduction to Algorithms - Tác giả: Thomas H. Cormen. Giá: $99. (1312 trang). Mô tả: Từ điển bách khoa toàn thư về mọi loại Thuật toán trong tin học.
 
-=== ĐƠN HÀNG BỊ HỦY HOẶC CHƯA NHẬN ĐƯỢC EMAIL ===
-Đơn chỉ bị hủy khi thanh toán không thành công, hết hàng có thông báo, hoặc bạn chủ động hủy trong thời gian cho phép (nếu tính năng có trên website). Nếu không nhận được email xác nhận, kiểm tra địa chỉ email, thư mục Spam, và mục Khuyến mãi. Vẫn không thấy thì đăng nhập tài khoản xem mục Đơn hàng hoặc gọi 1900-1234 cung cấp số điện thoại hoặc mã đơn để tra cứu.
+[ĐIỆN TỬ & KỸ THUẬT SỐ]
+12. Sony WH-1000XM5 Wireless Headphones - Hãng: Sony. Giá: $349. Mô tả: Tai nghe chụp tai chống ồn hàng đầu, pin lên đến 30 tiếng. Màu: Black.
+13. MacBook Air M3 15-inch - Hãng: Apple. Giá: $1299. Mô tả: Laptop siêu mỏng nhẹ, pin trâu, tích hợp chip M3 siêu phân luồng, RAM 8GB, 256GB SSD. Màu: Midnight.
+14. iPhone 15 Pro 128GB - Hãng: Apple. Giá: $999. Mô tả: Điện thoại khung viền Titanium, camera xịn xò với USB Type C.
+15. Samsung Galaxy S24 256GB - Hãng: Samsung. Giá: $899. Mô tả: Smartphone Android đầu bảng, màn hình sắc nét. Màu: Onyx Black.
+16. iPad Air 11-inch Wi-Fi 128GB - Hãng: Apple. Giá: $599. Mô tả: Kích thước mỏng nhẹ hoàn hảo cho công việc lẫn giải trí. Màu: Starlight.
+17. Dell XPS 13 (i7 / 16GB / 512GB) - Hãng: Dell. Giá: $1199. Mô tả: Premium Ultrabook với cấu hình i7 mạnh mẽ, màn hình viền siêu mỏng. Màu: Platinum Silver.
+18. Logitech MX Master 3S Mouse - Hãng: Logitech. Giá: $99. Mô tả: Chuột công thái học cao cấp dành cho văn phòng, lăn siêu tốc. Màu: Graphite.
+19. Keychron K2 Mechanical Keyboard - Hãng: Keychron. Giá: $89. Mô tả: Bàn phím cơ không dây layout 75%, sử dụng Brown Switch dễ bấm.
+20. Canon EOS R50 Mirrorless Camera - Hãng: Canon. Giá: $679. Mô tả: Máy ảnh nhỏ gọn dành cho nhu cầu chụp hàng ngày và creator quay 4K.
+21. Anker 20W USB-C Charger - Hãng: Anker. Giá: $19. Mô tả: Củ sạc nhanh nhỏ gọn chuẩn PD 20W.
 
-=== GIAO SAI SẢN PHẨM HOẶC THIẾU HÀNG ===
-Nếu nhận sai tựa sách hoặc thiếu cuốn trong đơn, giữ nguyên bao bì và chụp ảnh nếu được yêu cầu, liên hệ ngay hotline 1900-1234 hoặc email support@microservice-bookstore.com trong vòng 48 giờ kể từ khi nhận. Bộ phận hỗ trợ sẽ hướng dẫn đổi, bổ sung hoặc hoàn tiền theo từng trường hợp.
+[QUẦN ÁO TRANH TRÍ & THỜI TRANG]
+22. Classic Fit Oxford Shirt - Hãng: Ralph Lauren. Giá: $89. Mô tả: Sơ mi nam Oxford cotton thoáng khí. Màu: Trắng. Trải dài size S tới XL.
+23. Women's Premium Running Shoes - Hãng: Nike. Giá: $129. Mô tả: Giày chạy nữ xốp giảm va chấn. Màu: Hot Pink.
+24. Men's Slim Jeans - Hãng: Levi's. Giá: $79. Mô tả: Quần Jeans nam dáng Slim-fit màu xanh Indigo. Giãn nhẹ, năng động.
+25. Women's Oversized Hoodie - Hãng: Adidas. Giá: $69. Mô tả: Áo khoác hoodie rộng thỏai mái lót nỉ nhung êm ái. Màu: Heather Grey.
+26. Kids Cotton T-Shirt Pack (3) - Hãng: Uniqlo. Giá: $24. Mô tả: Bộ 3 áo phông nhí 100% Cotton thoáng.
+27. Leather Chelsea Boots - Hãng: Clarks. Giá: $149. Mô tả: Bốt Chelsea cổ điển, đế da lộn màu Dark Brown phong trần.
+28. Women's Summer Dress - Hãng: Zara. Giá: $59. Mô tả: Váy hè dáng buông với thiết kế hoa cỏ mát mẻ (Floral Viscose).
 
-=== GỢI Ý SÁCH THEO SỞ THÍCH ===
-Yêu thích pháp thuật và phiêu lưu: bộ Harry Potter của J.K. Rowling kể về cậu bé phù thủy tại Hogwarts. Lập trình viên muốn code sạch: Clean Code của Robert C. Martin. Văn học Việt Nam: Sống mòn của Nam Cao về người trí thức nghèo trước Cách mạng. Kỹ năng giao tiếp: Đắc Nhân Tâm (How to Win Friends and Influence People) của Dale Carnegie.
+[THỰC PHẨM & ĐỒ UỐNG]
+29. Organic Matcha Green Tea Powder - Hãng: Jade Leaf. Giá: $24. Mô tả: Bột trà xanh Matcha hữu cơ tinh khiết nhập khẩu từ Uji, Nhật Bản (100g). Vị đắng nhẹ, thơm ngon tự nhiên.
+30. Cold Brew Coffee Concentrate - Hãng: Stumptown. Giá: $16. Mô tả: Cà phê Cold Brew đậm đặc đóng chai 500ml uống liền.
+31. Sea Salt Dark Chocolate Bar - Hãng: Lindt. Giá: $5. Mô tả: Sô-cô-la đen nguyên chất (70% Cacao) thanh 100g phủ muối biển.
+32. Roasted Almonds (Unsalted) - Hãng: Planters. Giá: $8. Mô tả: Hạnh nhân sấy giòn không muối, 400g.
+33. Sparkling Water Variety Pack - Hãng: LaCroix. Giá: $12. Mô tả: Thùng lốc 12 lon nước uống có ga đa dạng hương vị, không đường.
+34. Organic Extra Virgin Olive Oil - Hãng: Bertolli. Giá: $14. Mô tả: Dầu ô-liu Ép lạnh 100% hữu cơ, dủng trộn Salad hay xào nấu chuyên sâu (750ml).
 
-=== CÂU HỎI VỀ GIÁ VÀ TỒN KHO ===
-Giá niêm yết, khuyến mãi và số lượng còn bán có thể thay đổi theo thời gian thực. Bạn nên xem trực tiếp trên trang chi tiết sách hoặc giỏ hàng để biết mức giá và tình trạng còn hàng chính xác nhất tại thời điểm đặt. Bookstore AI chỉ tư vấn dựa trên tài liệu chính sách; không thay thế bảng giá trực tiếp trên website.
+[NHÀ CỬA, NỘI THẤT & TRANG TRÍ]
+35. Scandinavian Oak Coffee Table - Hãng: IKEA. Giá: $199. Mô tả: Bàn sofa / bàn cà phê gỗ Sồi nguyên khối, kích thước 120x60x45cm. Phong cách Bắc Âu.
+36. Ergonomic Office Chair - Hãng: Herman Miller. Giá: $999. Mô tả: Chiếc ghế công thái học đắt đỏ tốt nhất thế giới dành cho dân IT và phòng làm việc. Bảo hành 12 năm.
+37. Nonstick Frying Pan 28cm - Hãng: Tefal. Giá: $39. Mô tả: Chảo chống dính 28cm dành cho nhà bếp, độ bền rất cao.
+38. Stainless Steel Chef Knife 8-inch - Hãng: Victorinox. Giá: $49. Mô tả: Dao cắt bếp bằng thép không gỉ trứ danh. Lưỡi dài 8-inch.
+39. Minimalist Wall Clock - Hãng: Muji. Giá: $29. Mô tả: Đồng hồ treo tường siêu tối giản.
+40. Scented Candle - Vanilla - Hãng: Yankee Candle. Giá: $19. Mô tả: Nến thơm hương cam Vanilla nhẹ nhàng, lưu hương tốt giúp thư giãn đầu óc. Khối lượng 400g, cháy 45h.
 
-=== LƯU Ý KHI DÙNG BOOKSTORE AI ===
-Trợ lý chỉ trả lời dựa trên nội dung chính sách và hướng dẫn trong hệ thống. Nếu câu hỏi vượt ngoài tài liệu hoặc cần xử lý cá nhân (tra cứu đơn, hoàn tiền cụ thể), vui lòng gọi hotline 1900-1234 hoặc gửi email support@microservice-bookstore.com để được hỗ trợ chi tiết.
+[DỤNG CỤ THỂ THAO & DÃ NGOẠI]
+41. Adjustable Dumbbell Set 20kg - Hãng: Bowflex. Giá: $179. Mô tả: Bộ tạ đa năng cho phép điều chỉnh cân nặng qua ngàm gắn cực kỳ tiện ích lên đến 20kg.
+42. Yoga Mat 6mm - Hãng: Manduka. Giá: $79. Mô tả: Thảm tập yoga cao cấp dày 6 ly màu đen tĩnh mịch, độ bám sàn lý tưởng, chất liệu chịu mài mòn chuẩn PVC.
+43. Running Water Bottle 500ml - Hãng: Nike. Giá: $14. Mô tả: Bình đựng nước khi điền kinh dung tích 500ml siêu nhẹ.
+44. Camping Tent 2-Person - Hãng: Coleman. Giá: $119. Mô tả: Lều cắm trại bung nhanh dánh cho 2 người, chống nước chuẩn.
+45. Outdoor Hiking Backpack 30L - Hãng: Osprey. Giá: $149. Mô tả: Balo leo núi việt dã cao cấp Osprey dung tích 30 lit siêu thoáng khí.
+46. Soccer Ball - Match Size 5 - Hãng: Adidas. Giá: $29. Mô tả: Bóng đá thông dụng kích thước size 5 cho các trận bóng sân cỏ.
+
+=== LƯU Ý KHI SỬ DỤNG TRỢ LÝ AI ===
+Trợ lý chỉ trả lời nội dung chính sách, sản phẩm tồn tại trong danh sách để tư vấn khách mua hàng. Giá cả cập nhật trong db nên ưu tiên giá giỏ hàng. Gọi 1900-1234 nếu bạn cần hỗ trợ xử lý cụ thể cho đơn.

@@ -33,8 +33,8 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
-    book_id = models.IntegerField(help_text="FK to book-service Book")
-    book_title = models.CharField(max_length=300)
+    product_id = models.IntegerField(help_text="FK to product-service Product")
+    product_title = models.CharField(max_length=300)
     quantity = models.PositiveIntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -46,4 +46,4 @@ class OrderItem(models.Model):
         return self.unit_price * self.quantity
 
     def __str__(self):
-        return f"OrderItem(order={self.order_id}, book={self.book_id})"
+        return f"OrderItem(order={self.order_id}, product={self.product_id})"

@@ -3,31 +3,33 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import BookCard from "../components/BookCard";
+import ProductCard from "../components/ProductCard";
 import CategoryFilter from "../components/CategoryFilter";
-import { useBooks } from "../hooks/useBooks";
+import { useProducts } from "../hooks/useProducts";
 import { useCatalog } from "../hooks/useCatalog";
 import { useAuth } from "../context/AuthContext";
 import { getRecommendations } from "../api/recommendations";
 
-const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80";
+const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=600&q=80";
 
-/** Map recommendation item to book-like shape for BookCard */
-function recommendationToBook(r) {
+/** Map recommendation item to product-like shape for ProductCard */
+function recommendationToProduct(r) {
   return {
-    id: r.book_id,
+    id: r.product_id,
     title: r.title,
-    author: r.author,
+    brand: r.brand || "",
+    author: r.brand || "",
     price: r.price != null ? Number(r.price) : null,
     image: r.cover_image || PLACEHOLDER_IMAGE,
     category_id: r.category_id,
+    product_type: r.product_type || "BOOK",
   };
 }
 
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const { user, isAuthenticated } = useAuth();
-  const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
 
   useEffect(() => {
@@ -37,35 +39,34 @@ export default function HomePage() {
     getRecommendations(customerId, { limit: 8 })
       .then((data) => {
         if (!cancelled && data.recommendations?.length) {
-          setRecommendedBooks(data.recommendations.map(recommendationToBook));
+          setRecommendedProducts(data.recommendations.map(recommendationToProduct));
         }
       })
-      .catch(() => { if (!cancelled) setRecommendedBooks([]); })
+      .catch(() => { if (!cancelled) setRecommendedProducts([]); })
       .finally(() => { if (!cancelled) setRecommendationsLoading(false); });
     return () => { cancelled = true; };
   }, [isAuthenticated, user?.id, user?.role]);
 
-  const { results: books, loading, error } = useBooks({
+  const { results: products, loading, error } = useProducts({
     page_size: 50,
     ...(activeCategory !== "all" ? { category_id: activeCategory } : {}),
   });
   const { categories } = useCatalog();
 
-  // Fallback when API fails (backend not running, etc.)
   const safeCategories = categories.length > 0 ? categories : [{ id: "all", name: "All", slug: "all" }];
 
-  const displayedBooks = useMemo(() => {
-    if (activeCategory === "all") return books.filter((b) => b.isNew).slice(0, 6);
-    return books.filter((b) => String(b.category_id) === String(activeCategory)).slice(0, 6);
-  }, [books, activeCategory]);
+  const displayedProducts = useMemo(() => {
+    if (activeCategory === "all") return products.filter((p) => p.isNew).slice(0, 6);
+    return products.filter((p) => String(p.category_id) === String(activeCategory)).slice(0, 6);
+  }, [products, activeCategory]);
 
   const editorialPicks = useMemo(() => {
-    if (books.length < 2) return [];
+    if (products.length < 2) return [];
     return [
-      { label: "This Week's Editor Pick", book: books[0], accent: "from-amber-50 to-orange-100" },
-      { label: "Staff Favourite", book: books[1], accent: "from-slate-50 to-gray-100" },
+      { label: "This Week's Editor Pick", product: products[0], accent: "from-amber-50 to-orange-100" },
+      { label: "Staff Favourite", product: products[1], accent: "from-slate-50 to-gray-100" },
     ];
-  }, [books]);
+  }, [products]);
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50">
@@ -78,16 +79,16 @@ export default function HomePage() {
             Thoughtfully Curated
           </p>
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-medium text-gray-900 max-w-2xl mx-auto leading-tight">
-            Discover books for{" "}
-            <em className="not-italic text-gray-500">every reader.</em>
+            Discover products for{" "}
+            <em className="not-italic text-gray-500">every need.</em>
           </h1>
           <p className="mt-5 text-gray-500 text-base max-w-md mx-auto leading-relaxed">
-            Explorations into books, reading culture, and the art of
-            thoughtful curation.
+            Explorations into quality products, curated collections, and the art of
+            thoughtful shopping.
           </p>
           <div className="flex items-center justify-center gap-3 mt-7">
             <Link to="/category/all" className="btn-primary">
-              Browse all books
+              Browse all products
             </Link>
             {safeCategories[1] && (
               <Link to={`/category/${safeCategories[1].id}`} className="btn-outline">
@@ -116,17 +117,17 @@ export default function HomePage() {
             <div className="flex justify-center py-12">
               <Loader2 size={28} className="animate-spin text-gray-400" />
             </div>
-          ) : recommendedBooks.length > 0 ? (
+          ) : recommendedProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-x-4 gap-y-8">
-              {recommendedBooks.map((book) => (
-                <BookCard key={book.id} book={book} />
+              {recommendedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
             <p className="text-center py-8 text-gray-400 text-sm">
               {isAuthenticated && user?.role === "customer"
-                ? "Mua thêm sách để nhận gợi ý cá nhân."
-                : "Chưa có dữ liệu gợi ý. Hãy khám phá danh mục sách."}
+                ? "Mua thêm sản phẩm để nhận gợi ý cá nhân."
+                : "Chưa có dữ liệu gợi ý. Hãy khám phá danh mục sản phẩm."}
             </p>
           )}
         </section>
@@ -138,7 +139,6 @@ export default function HomePage() {
               Không thể tải dữ liệu. Kiểm tra backend đã chạy chưa (docker compose up).
             </div>
           )}
-          {/* Filter */}
           <div className="flex items-center justify-between mb-8">
             <CategoryFilter
               activeCategory={activeCategory}
@@ -147,20 +147,19 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Book grid */}
           {loading ? (
             <div className="flex justify-center py-16">
               <Loader2 size={32} className="animate-spin text-gray-400" />
             </div>
-          ) : displayedBooks.length > 0 ? (
+          ) : displayedProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-x-5 gap-y-10">
-              {displayedBooks.map((book) => (
-                <BookCard key={book.id} book={book} />
+              {displayedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
             <div className="text-center py-20 text-gray-400">
-              <p className="text-base">No books in this category yet.</p>
+              <p className="text-base">No products in this category yet.</p>
               <button
                 onClick={() => setActiveCategory("all")}
                 className="mt-4 text-sm text-gray-600 underline underline-offset-2"
@@ -170,7 +169,6 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* See all CTA */}
           <div className="mt-12 text-center">
             <Link
               to={`/category/${activeCategory}`}
@@ -179,7 +177,7 @@ export default function HomePage() {
               See all
               {activeCategory !== "all"
                 ? ` ${safeCategories.find((c) => c.id === activeCategory)?.name ?? ""}`
-                : " books"}
+                : " products"}
               <ArrowRight size={14} />
             </Link>
           </div>
@@ -202,17 +200,17 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {editorialPicks.map((pick) => {
-                const book = pick.book;
-                if (!book) return null;
+                const product = pick.product;
+                if (!product) return null;
                 return (
                   <Link
-                    key={book.id}
-                    to={`/book/${book.id}`}
+                    key={product.id}
+                    to={`/product/${product.id}`}
                     className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${pick.accent} p-8 flex gap-6 hover:shadow-md transition-shadow`}
                   >
                     <img
-                      src={book.image}
-                      alt={book.title}
+                      src={product.image}
+                      alt={product.title}
                       className="w-24 h-32 object-cover rounded-sm shadow-md shrink-0 group-hover:shadow-lg transition-shadow"
                     />
                     <div className="flex flex-col justify-center">
@@ -220,11 +218,11 @@ export default function HomePage() {
                         {pick.label}
                       </span>
                       <h3 className="font-serif text-xl font-semibold text-gray-900 leading-tight">
-                        {book.title}
+                        {product.title}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">{book.author}</p>
+                      <p className="text-sm text-gray-500 mt-1">{product.brand || product.author}</p>
                       <p className="mt-3 text-sm font-semibold text-gray-900">
-                        ${book.price?.toFixed(2)}
+                        ${product.price?.toFixed(2)}
                       </p>
                     </div>
                     <ArrowRight
@@ -270,11 +268,11 @@ export default function HomePage() {
               Newsletter
             </p>
             <h2 className="font-serif text-3xl font-medium mb-4">
-              New books, every week.
+              New products, every week.
             </h2>
             <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-              Stay in the loop on new arrivals, reading recommendations, and
-              conversations with the people who make the books we love.
+              Stay in the loop on new arrivals, curated recommendations, and
+              conversations with the brands we love.
             </p>
             <form
               onSubmit={(e) => e.preventDefault()}

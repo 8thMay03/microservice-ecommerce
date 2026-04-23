@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Seed sample data for BookStore microservices.
+Seed sample data for Ecommerce microservices.
 Requires: Docker Compose services running (docker compose up -d)
 Run from project root: python scripts/seed_data.py
 """
@@ -12,65 +12,293 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PASSWORD = "Password123!"
 
+# Demo accounts: user1@example.com … user{N}@example.com (same password DEFAULT_PASSWORD)
+NUM_SAMPLE_CUSTOMERS = 500
+
+_FIRST_NAMES = (
+    "Alice Bob Carol David Eve Frank Grace Henry Ivy Jack Ken Linh Minh Nga Oanh Phuc Quan Rosa Son Thao "
+    "An Binh Chi Dung Giang Hai Hoa Hue Khanh Lan Mai Nam Phuong Quynh Sang Tam Uyen Viet Xuan Yen Zach "
+    "Alex Belle Chris Dana Erik Fiona Gail Hugo Ines Jake Kate Leo Mara Nate Olga Pete Quinn Rita Steve Tina "
+    "Uma Vick Wendy Yuri Zara Adam Beth Carl Dana Evan Fay Gina Hank Iris Jean Kyle Luna Mark Nina Owen Pam "
+    "Quin Ruby Sean Tara Uma Vince Will Xena Yves Zoe"
+).split()
+
+_LAST_NAMES = (
+    "Nguyen Tran Le Pham Hoang Vo Dang Bui Do Ly Phan Vu Truong Dinh Ngo Huynh Cao Duong La Trieu Mach "
+    "Ton Van Dam Phung Ta Dang Bui Chau Lam Quach Dao Ton Vuong"
+).split()
+
+_ADDRESS_BASES = [
+    "123 Tran Hung Dao, Hanoi",
+    "456 Nguyen Hue, Ho Chi Minh City",
+    "789 Bach Dang, Da Nang",
+    "101 Hai Ba Trung, Can Tho",
+    "202 Le Loi, Hue",
+    "303 Tran Phu, Nha Trang",
+    "404 Dien Bien Phu, Hai Phong",
+    "505 Thuy Van, Vung Tau",
+    "606 Nguyen Cong Tru, Dalat",
+    "707 Xuan Dieu, Quy Nhon",
+]
+
+
+def _build_sample_customers(n: int) -> list:
+    """Synthetic customers; phones are 10-digit strings starting with 09."""
+    out = []
+    for i in range(n):
+        num = i + 1
+        fn = _FIRST_NAMES[i % len(_FIRST_NAMES)]
+        ln = _LAST_NAMES[i % len(_LAST_NAMES)]
+        addr = _ADDRESS_BASES[i % len(_ADDRESS_BASES)] + f" (Customer #{num})"
+        phone = "09" + f"{num:08d}"
+        out.append(
+            {
+                "email": f"user{num}@example.com",
+                "first_name": fn,
+                "last_name": ln,
+                "phone": phone,
+                "address": addr,
+            }
+        )
+    return out
+
+
+CUSTOMERS = _build_sample_customers(NUM_SAMPLE_CUSTOMERS)
+
 # Category slug -> ID mapping (after seed, IDs are 1-based in creation order)
+# Updated for ecommerce with subcategories (parent IDs are the root categories)
 CATEGORY_SLUG_TO_ID = {
-    "general": 1,
-    "graphic-design": 2,
-    "product-design": 3,
-    "architecture": 4,
-    "fine-arts": 5,
-    "science": 6,
-    "photography": 7,
+    "books": 1,
+    "fiction": 2,
+    "non-fiction": 3,
+    "science": 4,
+    "history": 5,
+    "technology-books": 6,
+    "electronics": 7,
+    "phones-tablets": 8,
+    "laptops-computers": 9,
+    "audio": 10,
+    "cameras": 11,
+    "clothing": 12,
+    "mens-clothing": 13,
+    "womens-clothing": 14,
+    "kids-clothing": 15,
+    "shoes": 16,
+    "food-beverages": 17,
+    "snacks": 18,
+    "beverages": 19,
+    "organic": 20,
+    "home-garden": 21,
+    "furniture": 22,
+    "kitchen": 23,
+    "decor": 24,
+    "sports-outdoors": 25,
+    "fitness": 26,
+    "outdoor": 27,
+    "team-sports": 28,
 }
 
-SAMPLE_BOOKS = [
-    {"title": "Letters from M/M (Paris)", "author": "M/M Paris", "price": 39, "category": "graphic-design",
-     "image": "https://m.media-amazon.com/images/I/81fcH8Y-oqL._AC_UF894,1000_QL80_.jpg",
-     "description": "A comprehensive survey of M/M Paris — the studio that redefined the boundaries between art and commercial graphic design.", "pages": 328, "year": 2023, "isbn": "978-0-500-02587-1"},
-    {"title": "Daan Paans: Floating Signifiers", "author": "Daan Paans", "price": 29, "category": "photography",
-     "image": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&q=80",
-     "description": "A journey through ambiguous images that resist easy categorization.", "pages": 224, "year": 2023, "isbn": "978-94-92852-45-1"},
-    {"title": "Album Architectures, Maputo", "author": "Luís Loureiro", "price": 19, "category": "architecture",
-     "image": "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80",
-     "description": "An intimate visual record of Maputo's modernist built environment.", "pages": 192, "year": 2022, "isbn": "978-3-7757-5331-4"},
-    {"title": "Aaron Rothman: The Sierra", "author": "Aaron Rothman", "price": 39, "category": "photography",
-     "image": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80",
-     "description": "Vast, sublime, and meditative large-format photographs of the Sierra Nevada.", "pages": 256, "year": 2023, "isbn": "978-1-942185-89-2"},
-    {"title": "Dieter Rams: The Complete Works", "author": "Klaus Klemp & Keiko Ueki-Polet", "price": 29, "category": "product-design",
-     "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-     "description": "The definitive monograph on Dieter Rams and his ten principles of good design.", "pages": 480, "year": 2021, "isbn": "978-0-7148-7974-7"},
-    {"title": "Yellow Nose Studio: INDERGARTEN", "author": "Yellow Nose Studio", "price": 19, "category": "graphic-design",
-     "image": "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=600&q=80",
-     "description": "An experimental graphic design catalogue exploring childhood iconography.", "pages": 128, "year": 2023, "isbn": "978-0-0000-0000-6"},
-    {"title": "Concrete Poetry: A World View", "author": "Mary Ellen Solt", "price": 45, "category": "fine-arts",
-     "image": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600&q=80",
-     "description": "The most comprehensive anthology of international concrete poetry.", "pages": 272, "year": 2021, "isbn": "978-0-253-06124-5"},
-    {"title": "Forms of Inquiry", "author": "Zak Kyes & Mark Owens", "price": 34, "category": "graphic-design",
-     "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-     "description": "How graphic design can function as critical inquiry.", "pages": 288, "year": 2022, "isbn": "978-1-907896-68-5"},
-    {"title": "On Looking: Eleven Walks with Expert Eyes", "author": "Alexandra Horowitz", "price": 22, "category": "science",
-     "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
-     "description": "A cognitive scientist invites eleven experts to walk the same block of New York City.", "pages": 320, "year": 2022, "isbn": "978-1-4516-5060-7"},
-    {"title": "New Japanese Architecture", "author": "Botond Bognar", "price": 55, "category": "architecture",
-     "image": "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=600&q=80",
-     "description": "A sweeping examination of the transformative decade in Japanese architecture.", "pages": 352, "year": 2020, "isbn": "978-0-8478-6752-5"},
+SAMPLE_PRODUCTS = [
+    # Books (Fiction / Non-fiction / Science / History / Tech)
+    {"title": "Letters from M/M (Paris)", "brand": "M/M Paris", "price": 39, "category": "fiction",
+     "product_type": "BOOK", "image": "https://m.media-amazon.com/images/I/81fcH8Y-oqL._AC_UF894,1000_QL80_.jpg",
+     "description": "A comprehensive survey of M/M Paris — the studio that redefined the boundaries between art and commercial graphic design.",
+     "sku": "BK-9780500025871", "attributes": {"author": "M/M Paris", "pages": 328, "isbn": "978-0-500-02587-1", "language": "English", "published_date": "2023-01-01"}},
+    {"title": "Clean Code", "brand": "Robert C. Martin", "price": 34, "category": "technology-books",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600&q=80",
+     "description": "A handbook of agile software craftsmanship and maintainable code practices.",
+     "sku": "BK-9780132350884", "attributes": {"author": "Robert C. Martin", "pages": 464, "isbn": "978-0-13-235088-4", "language": "English", "published_date": "2008-08-01"}},
+    {"title": "Dieter Rams: The Complete Works", "brand": "Klaus Klemp", "price": 29, "category": "non-fiction",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+     "description": "The definitive monograph on Dieter Rams and his principles of good design.",
+     "sku": "BK-9780714879747", "attributes": {"author": "Klaus Klemp & Keiko Ueki-Polet", "pages": 480, "isbn": "978-0-7148-7974-7", "language": "English", "published_date": "2021-01-01"}},
+    {"title": "Sapiens: A Brief History of Humankind", "brand": "Yuval Noah Harari", "price": 22, "category": "history",
+     "product_type": "BOOK", "image": "https://bizweb.dktcdn.net/100/418/357/products/51xyww6zexl.jpg?v=1682391845823",
+     "description": "A sweeping narrative of human history, from early hunter-gatherers to the modern age.",
+     "sku": "BK-9780062316097", "attributes": {"author": "Yuval Noah Harari", "pages": 498, "isbn": "978-0-06-231609-7", "language": "English", "published_date": "2015-02-10"}},
+    {"title": "The Pragmatic Programmer (20th Anniversary)", "brand": "Andrew Hunt & David Thomas", "price": 38, "category": "technology-books",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&q=80",
+     "description": "Modern software engineering wisdom: pragmatism, craftsmanship, and working effectively.",
+     "sku": "BK-9780135957059", "attributes": {"author": "Andrew Hunt & David Thomas", "pages": 352, "isbn": "978-0-13-595705-9", "language": "English", "published_date": "2019-09-13"}},
+    {"title": "Deep Work", "brand": "Cal Newport", "price": 18, "category": "non-fiction",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80",
+     "description": "Rules for focused success in a distracted world: attention, habits, and meaningful output.",
+     "sku": "BK-9781455586691", "attributes": {"author": "Cal Newport", "pages": 304, "isbn": "978-1-4555-8669-1", "language": "English", "published_date": "2016-01-05"}},
+    {"title": "A Brief History of Time", "brand": "Stephen Hawking", "price": 17, "category": "science",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1529473814998-077b4fec6770?w=600&q=80",
+     "description": "From the Big Bang to black holes: an accessible tour of modern cosmology.",
+     "sku": "BK-9780553380163", "attributes": {"author": "Stephen Hawking", "pages": 212, "isbn": "978-0-553-38016-3", "language": "English", "published_date": "1998-09-01"}},
+    {"title": "The Martian", "brand": "Andy Weir", "price": 15, "category": "fiction",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&q=80",
+     "description": "A survival story on Mars with engineering, humor, and relentless problem solving.",
+     "sku": "BK-9780804139021", "attributes": {"author": "Andy Weir", "pages": 387, "isbn": "978-0-8041-3902-1", "language": "English", "published_date": "2014-02-11"}},
+    {"title": "Atomic Habits", "brand": "James Clear", "price": 19, "category": "non-fiction",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=600&q=80",
+     "description": "Tiny changes, remarkable results: practical systems for building good habits and breaking bad ones.",
+     "sku": "BK-9780735211292", "attributes": {"author": "James Clear", "pages": 320, "isbn": "978-0-7352-1129-2", "language": "English", "published_date": "2018-10-16"}},
+    {"title": "Guns, Germs, and Steel", "brand": "Jared Diamond", "price": 21, "category": "history",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1473186578172-c141e6798cf4?w=600&q=80",
+     "description": "A provocative account of how geography and environment shaped the fates of human societies.",
+     "sku": "BK-9780393317558", "attributes": {"author": "Jared Diamond", "pages": 528, "isbn": "978-0-393-31755-8", "language": "English", "published_date": "1999-03-01"}},
+    {"title": "Introduction to Algorithms", "brand": "Cormen et al.", "price": 99, "category": "technology-books",
+     "product_type": "BOOK", "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=600&q=80",
+     "description": "A comprehensive reference for algorithms, data structures, and analysis.",
+     "sku": "BK-9780262046305", "attributes": {"author": "Thomas H. Cormen", "pages": 1312, "isbn": "978-0-262-04630-5", "language": "English", "published_date": "2022-04-05"}},
+
+    # Electronics (Phones/Tablets / Laptops/Computers / Audio / Cameras)
+    {"title": "Sony WH-1000XM5 Wireless Headphones", "brand": "Sony", "price": 349, "category": "audio",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80",
+     "description": "Noise canceling headphones with clear calls and long battery life.",
+     "sku": "EL-SONYWH1000XM5", "attributes": {"warranty": "12 months", "connectivity": "Bluetooth 5.2", "battery_life": "30 hours", "color": "Black"}},
+    {"title": "MacBook Air M3 15-inch", "brand": "Apple", "price": 1299, "category": "laptops-computers",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
+     "description": "Thin, light laptop with a bright display and excellent battery life.",
+     "sku": "EL-APPMBAM3-15", "attributes": {"warranty": "12 months", "specs": {"cpu": "Apple M3", "ram": "8GB", "storage": "256GB SSD"}, "color": "Midnight"}},
+    {"title": "iPhone 15 Pro 128GB", "brand": "Apple", "price": 999, "category": "phones-tablets",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80",
+     "description": "Pro-grade smartphone with a fast chip, advanced camera system, and titanium design.",
+     "sku": "EL-APP-IP15P-128", "attributes": {"warranty": "12 months", "storage": "128GB", "color": "Natural Titanium", "connectivity": "5G"}},
+    {"title": "Samsung Galaxy S24 256GB", "brand": "Samsung", "price": 899, "category": "phones-tablets",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&q=80",
+     "description": "Flagship Android phone with a vivid display, fast performance, and versatile cameras.",
+     "sku": "EL-SAM-S24-256", "attributes": {"warranty": "12 months", "storage": "256GB", "color": "Onyx Black", "connectivity": "5G"}},
+    {"title": "iPad Air 11-inch Wi‑Fi 128GB", "brand": "Apple", "price": 599, "category": "phones-tablets",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?w=600&q=80",
+     "description": "Lightweight tablet for work and play with a sharp display and fast performance.",
+     "sku": "EL-APP-IPADA11-128", "attributes": {"warranty": "12 months", "storage": "128GB", "connectivity": "Wi‑Fi", "color": "Starlight"}},
+    {"title": "Dell XPS 13 (i7 / 16GB / 512GB)", "brand": "Dell", "price": 1199, "category": "laptops-computers",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
+     "description": "Compact premium ultrabook with a crisp display and solid keyboard.",
+     "sku": "EL-DELL-XPS13-I7", "attributes": {"warranty": "12 months", "specs": {"cpu": "Intel i7", "ram": "16GB", "storage": "512GB SSD"}, "color": "Platinum Silver"}},
+    {"title": "Logitech MX Master 3S Mouse", "brand": "Logitech", "price": 99, "category": "electronics",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=600&q=80",
+     "description": "Ergonomic productivity mouse with precise scrolling and quiet clicks.",
+     "sku": "EL-LOGI-MXMASTER3S", "attributes": {"warranty": "24 months", "connectivity": "Bluetooth / USB", "color": "Graphite"}},
+    {"title": "Keychron K2 Mechanical Keyboard", "brand": "Keychron", "price": 89, "category": "electronics",
+     "product_type": "ELECTRONICS", "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&q=80",
+     "description": "Wireless mechanical keyboard with compact layout and multi-device switching.",
+     "sku": "EL-KEYCHRON-K2", "attributes": {"warranty": "12 months", "switch_type": "Brown", "connectivity": "Bluetooth / USB-C", "layout": "75%"}},
+    {"title": "Canon EOS R50 Mirrorless Camera", "brand": "Canon", "price": 679, "category": "cameras",
+     "product_type": "ELECTRONICS", "image": "https://cdn.vjshop.vn/may-anh/mirrorless/canon/canon-eos-r50/black-18-45/canon-eos-r50-lens-18-45mm-500x500.jpg",
+     "description": "Compact mirrorless camera for creators with fast autofocus and 4K video.",
+     "sku": "EL-CAN-R50-BODY", "attributes": {"warranty": "12 months", "sensor": "APS-C", "video": "4K", "mount": "RF"}},
+    {"title": "Anker 20W USB-C Charger", "brand": "Anker", "price": 19, "category": "electronics",
+     "product_type": "ELECTRONICS", "image": "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/9499/330020/adapter-sac-2-cong-usb-type-c-iq3-20w-anker-a2348-den-1-638893150043982173-750x500.jpg",
+     "description": "Compact fast charger for phones and tablets with USB-C Power Delivery.",
+     "sku": "EL-ANK-CHG-20W", "attributes": {"warranty": "18 months", "power": "20W", "ports": 1, "connector": "USB-C"}},
+
+    # Clothing (Mens / Womens / Kids / Shoes)
+    {"title": "Classic Fit Oxford Shirt", "brand": "Ralph Lauren", "price": 89, "category": "mens-clothing",
+     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&q=80",
+     "description": "Breathable cotton oxford shirt in a polished classic fit.",
+     "sku": "CL-RL-OXFORD-M01", "attributes": {"sizes": ["S", "M", "L", "XL"], "color": "White", "material": "100% Cotton"}},
+    {"title": "Women's Premium Running Shoes", "brand": "Nike", "price": 129, "category": "shoes",
+     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80",
+     "description": "Responsive foam cushioning and breathable upper for daily training.",
+     "sku": "CL-NK-RUNSH-W01", "attributes": {"sizes": ["6", "7", "8", "9", "10"], "color": "Hot Pink", "material": "Flyknit"}},
+    {"title": "Men's Slim Jeans", "brand": "Levi's", "price": 79, "category": "mens-clothing",
+     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&q=80",
+     "description": "Everyday slim-fit denim with comfortable stretch and classic 5-pocket styling.",
+     "sku": "CL-LV-SLIMJ-M01", "attributes": {"sizes": ["30", "32", "34", "36"], "color": "Indigo", "material": "Denim"}},
+    {"title": "Women's Oversized Hoodie", "brand": "Adidas", "price": 69, "category": "womens-clothing",
+     "product_type": "CLOTHING", "image": "https://us.blakelyclothing.com/cdn/shop/products/2011WbeigeD-1_800x.jpg?v=1676370836",
+     "description": "Soft fleece hoodie with relaxed silhouette and ribbed cuffs.",
+     "sku": "CL-ADS-HOOD-W01", "attributes": {"sizes": ["XS", "S", "M", "L"], "color": "Heather Grey", "material": "Cotton blend"}},
+    {"title": "Kids Cotton T‑Shirt Pack (3)", "brand": "Uniqlo", "price": 24, "category": "kids-clothing",
+     "product_type": "CLOTHING", "image": "https://images.unsplash.com/photo-1520975661595-6453be3f7070?w=600&q=80",
+     "description": "Soft everyday tees for kids with durable stitching and comfortable fit.",
+     "sku": "CL-UNQ-KTS-3PK", "attributes": {"sizes": ["90", "100", "110", "120"], "color": "Assorted", "material": "100% Cotton"}},
+    {"title": "Leather Chelsea Boots", "brand": "Clarks", "price": 149, "category": "shoes",
+     "product_type": "CLOTHING", "image": "https://thursdayboots.com/cdn/shop/products/1024x1024-Men-Cavalier-Black-092121-3.4_1024x1024.jpg?v=1633034593",
+     "description": "Classic pull-on boots with elastic side panels and durable outsole.",
+     "sku": "CL-CLK-CHELS-M01", "attributes": {"sizes": ["7", "8", "9", "10", "11"], "color": "Dark Brown", "material": "Leather"}},
+    {"title": "Women's Summer Dress", "brand": "Zara", "price": 59, "category": "womens-clothing",
+     "product_type": "CLOTHING", "image": "https://images-cdn.ubuy.co.in/635e29037403ec6f010f8f6f-summer-dresses-for-women-2022-women-s.jpg",
+     "description": "Lightweight dress with a flattering cut for warm-weather days.",
+     "sku": "CL-ZRA-DRESS-W01", "attributes": {"sizes": ["XS", "S", "M", "L"], "color": "Floral", "material": "Viscose"}},
+
+    # Food & Beverages (Snacks / Beverages / Organic)
+    {"title": "Organic Matcha Green Tea Powder", "brand": "Jade Leaf", "price": 24, "category": "organic",
+     "product_type": "FOOD", "image": "https://images.unsplash.com/photo-1563822249366-3efb23b8e0c9?w=600&q=80",
+     "description": "Authentic organic matcha for lattes, smoothies, and baking.",
+     "sku": "FD-JL-MATCHA100", "attributes": {"weight": "100g", "origin": "Uji, Japan", "ingredients": ["organic matcha green tea"]}},
+    {"title": "Cold Brew Coffee Concentrate", "brand": "Stumptown", "price": 16, "category": "beverages",
+     "product_type": "FOOD", "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80",
+     "description": "Smooth cold brew concentrate. Mix with water or milk for an easy iced coffee.",
+     "sku": "FD-ST-CB-CONC", "attributes": {"volume": "500ml", "origin": "Blend", "caffeine": "High"}},
+    {"title": "Sea Salt Dark Chocolate Bar", "brand": "Lindt", "price": 5, "category": "snacks",
+     "product_type": "FOOD", "image": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&q=80",
+     "description": "Rich dark chocolate balanced with a hint of sea salt.",
+     "sku": "FD-LDT-DS-100", "attributes": {"weight": "100g", "cocoa": "70%", "allergens": ["milk", "soy"]}},
+    {"title": "Roasted Almonds (Unsalted)", "brand": "Planters", "price": 8, "category": "snacks",
+     "product_type": "FOOD", "image": "https://nuts.com/images/rackcdn/ed910ae2d60f0d25bcb8-80550f96b5feb12604f4f720bfefb46d.ssl.cf1.rackcdn.com/e54713f3a6d21cf3-lts0Khbk-zoom.jpg",
+     "description": "Crunchy roasted almonds. A simple snack with clean ingredients.",
+     "sku": "FD-PLN-ALM-400", "attributes": {"weight": "400g", "ingredients": ["almonds"], "allergens": ["nuts"]}},
+    {"title": "Sparkling Water Variety Pack", "brand": "LaCroix", "price": 12, "category": "beverages",
+     "product_type": "FOOD", "image": "https://images.unsplash.com/photo-1528823872057-9c018a7a7553?w=600&q=80",
+     "description": "Refreshing flavored sparkling water with zero sugar.",
+     "sku": "FD-LCR-SWP-12", "attributes": {"count": 12, "flavors": ["Lime", "Grapefruit", "Berry"], "sugar": "0g"}},
+    {"title": "Organic Extra Virgin Olive Oil", "brand": "Bertolli", "price": 14, "category": "organic",
+     "product_type": "FOOD", "image": "https://images.unsplash.com/photo-1514996937319-344454492b37?w=600&q=80",
+     "description": "Cold-pressed organic extra virgin olive oil for cooking and salads.",
+     "sku": "FD-BER-EVOO-750", "attributes": {"volume": "750ml", "origin": "Mediterranean", "ingredients": ["organic olives"]}},
+
+    # Home & Garden (Furniture / Kitchen / Decor)
+    {"title": "Scandinavian Oak Coffee Table", "brand": "IKEA", "price": 199, "category": "furniture",
+     "product_type": "HOME", "image": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
+     "description": "Minimalist oak coffee table with clean lines and natural finish.",
+     "sku": "HM-IK-OAKCTBL01", "attributes": {"dimensions": "120x60x45cm", "material": "Solid Oak", "weight": "15kg"}},
+    {"title": "Ergonomic Office Chair", "brand": "Herman Miller", "price": 999, "category": "furniture",
+     "product_type": "HOME", "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvKbJs87del7Y6nBRCKm__R5HR7X62wLfdDw&s",
+     "description": "Premium ergonomic chair designed for long work sessions and better posture.",
+     "sku": "HM-HM-ERGOCHR01", "attributes": {"material": "Mesh", "color": "Graphite", "warranty": "12 years"}},
+    {"title": "Nonstick Frying Pan 28cm", "brand": "Tefal", "price": 39, "category": "kitchen",
+     "product_type": "HOME", "image": "https://images-na.ssl-images-amazon.com/images/I/71FlPCBSmoL.jpg",
+     "description": "Everyday nonstick pan with even heating and comfortable handle.",
+     "sku": "HM-TEF-PAN-28", "attributes": {"diameter": "28cm", "material": "Aluminum", "coating": "Nonstick"}},
+    {"title": "Stainless Steel Chef Knife 8-inch", "brand": "Victorinox", "price": 49, "category": "kitchen",
+     "product_type": "HOME", "image": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=600&q=80",
+     "description": "Sharp, balanced chef knife for everyday prep in the kitchen.",
+     "sku": "HM-VTX-KNIFE-8", "attributes": {"blade_length": "8-inch", "material": "Stainless Steel", "handle": "Fibrox"}},
+    {"title": "Minimalist Wall Clock", "brand": "Muji", "price": 29, "category": "decor",
+     "product_type": "HOME", "image": "https://images.unsplash.com/photo-1509644851169-2acc08aa25b5?w=600&q=80",
+     "description": "Quiet wall clock with clean dial and easy-to-read markers.",
+     "sku": "HM-MUJI-CLOCK01", "attributes": {"diameter": "25cm", "power": "AA battery", "color": "White"}},
+    {"title": "Scented Candle - Vanilla", "brand": "Yankee Candle", "price": 19, "category": "decor",
+     "product_type": "HOME", "image": "https://m.media-amazon.com/images/I/81HSydTuXVL.jpg",
+     "description": "Warm vanilla fragrance for cozy evenings and relaxing ambience.",
+     "sku": "HM-YC-VAN-CNDL", "attributes": {"burn_time": "45 hours", "scent": "Vanilla", "weight": "400g"}},
+
+    # Sports & Outdoors (Fitness / Outdoor / Team sports)
+    {"title": "Adjustable Dumbbell Set 20kg", "brand": "Bowflex", "price": 179, "category": "fitness",
+     "product_type": "SPORTS", "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80",
+     "description": "Replace multiple weights with one compact adjustable set.",
+     "sku": "SP-BF-DUMBBL20", "attributes": {"weight_range": "2-20kg", "material": "Steel with rubber grip"}},
+    {"title": "Yoga Mat 6mm", "brand": "Manduka", "price": 79, "category": "fitness",
+     "product_type": "SPORTS", "image": "https://m.media-amazon.com/images/I/41fQHCuWAsL._AC_UF894,1000_QL80_.jpg",
+     "description": "Durable yoga mat with great grip for daily practice.",
+     "sku": "SP-MDK-YOGAMAT6", "attributes": {"thickness": "6mm", "material": "PVC", "color": "Black"}},
+    {"title": "Running Water Bottle 500ml", "brand": "Nike", "price": 14, "category": "fitness",
+     "product_type": "SPORTS", "image": "https://m.media-amazon.com/images/I/61XvgOL89lL.jpg",
+     "description": "Lightweight bottle with easy-sip nozzle for training sessions.",
+     "sku": "SP-NK-BTTL-500", "attributes": {"volume": "500ml", "material": "BPA-free plastic"}},
+    {"title": "Camping Tent 2-Person", "brand": "Coleman", "price": 119, "category": "outdoor",
+     "product_type": "SPORTS", "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&q=80",
+     "description": "Quick setup tent with rainfly for weekend camping trips.",
+     "sku": "SP-CLM-TENT-2P", "attributes": {"capacity": "2-person", "season": "3-season", "weight": "2.9kg"}},
+    {"title": "Outdoor Hiking Backpack 30L", "brand": "Osprey", "price": 149, "category": "outdoor",
+     "product_type": "SPORTS", "image": "https://ampexgear.com/cdn/shop/files/AMP6001950LBackpack_10_a9ae3989-8d05-40ac-8f03-721588f0e996.jpg?v=1692995580&width=1500",
+     "description": "Comfortable daypack with breathable back panel and hydration compatibility.",
+     "sku": "SP-OSP-PACK-30L", "attributes": {"capacity": "30L", "weight": "1.2kg", "color": "Blue"}},
+    {"title": "Soccer Ball - Match Size 5", "brand": "Adidas", "price": 29, "category": "team-sports",
+     "product_type": "SPORTS", "image": "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=600&q=80",
+     "description": "Durable size 5 ball for training and casual matches.",
+     "sku": "SP-ADS-SOCC-5", "attributes": {"size": 5, "material": "PU", "color": "White/Black"}},
 ]
 
-CUSTOMERS = [
-    {"email": "user1@example.com", "first_name": "Alice", "last_name": "Nguyen", "phone": "0901234567", "address": "123 Hanoi"},
-    {"email": "user2@example.com", "first_name": "Bob", "last_name": "Tran", "phone": "0912345678", "address": "456 Ho Chi Minh"},
-    {"email": "user3@example.com", "first_name": "Carol", "last_name": "Le", "phone": "0923456789", "address": "789 Da Nang"},
-    {"email": "user4@example.com", "first_name": "David", "last_name": "Pham", "phone": "0934567890", "address": "101 Can Tho"},
-    {"email": "user5@example.com", "first_name": "Eve", "last_name": "Hoang", "phone": "0945678901", "address": "202 Hue"},
-    {"email": "user6@example.com", "first_name": "Frank", "last_name": "Vo", "phone": "0956789012", "address": "303 Nha Trang"},
-    {"email": "user7@example.com", "first_name": "Grace", "last_name": "Dang", "phone": "0967890123", "address": "404 Hai Phong"},
-    {"email": "user8@example.com", "first_name": "Henry", "last_name": "Bui", "phone": "0978901234", "address": "505 Vung Tau"},
-    {"email": "user9@example.com", "first_name": "Ivy", "last_name": "Do", "phone": "0989012345", "address": "606 Dalat"},
-    {"email": "user10@example.com", "first_name": "Jack", "last_name": "Ly", "phone": "0990123456", "address": "707 Quy Nhon"},
-]
+# pass: Password123!
 
-
-def run_exec(service: str, cmd: str) -> bool:
+def run_exec(service: str, cmd: str, timeout: int = 120) -> bool:
     """Run command in Docker Compose service. Returns True on success."""
     full_cmd = [
         "docker", "compose", "exec", "-T", service,
@@ -82,7 +310,7 @@ def run_exec(service: str, cmd: str) -> bool:
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=timeout,
         )
         if result.returncode != 0:
             print(f"  Error: {result.stderr or result.stdout}")
@@ -99,73 +327,54 @@ def run_exec(service: str, cmd: str) -> bool:
         return False
 
 
-def seed_catalog():
-    print("1. Seeding catalog (categories)...")
-    code = """
-from catalog.models import Category
-created = []
-for name, slug in [
-    ("General", "general"),
-    ("Graphic Design", "graphic-design"),
-    ("Product Design", "product-design"),
-    ("Architecture", "architecture"),
-    ("Fine Arts", "fine-arts"),
-    ("Science", "science"),
-    ("Photography", "photography"),
-]:
-    c, _ = Category.objects.get_or_create(slug=slug, defaults={"name": name, "description": ""})
-    created.append(c.slug)
-print("Categories:", created)
-"""
-    return run_exec("catalog-service", code)
-
-
-def isbn13_digits(isbn: str) -> str:
-    """Strip dashes, keep 13 digits for ISBN-13."""
-    return isbn.replace("-", "")[:13]
-
-
-def seed_books():
-    print("2. Seeding books...")
-    books_data = []
-    for b in SAMPLE_BOOKS:
-        cat_id = CATEGORY_SLUG_TO_ID.get(b["category"], 1)
-        books_data.append({
-            "isbn": isbn13_digits(b["isbn"]),
-            "title": b["title"],
-            "author": b["author"],
-            "price": b["price"],
-            "description": b["description"],
-            "cover_image": b["image"],
+def seed_products():
+    print("2. Seeding products...")
+    products_data = []
+    for p in SAMPLE_PRODUCTS:
+        cat_id = CATEGORY_SLUG_TO_ID.get(p["category"], 1)
+        products_data.append({
+            "sku": p["sku"],
+            "title": p["title"],
+            "brand": p["brand"],
+            "price": p["price"],
+            "description": p["description"],
+            "cover_image": p["image"],
             "category_id": cat_id,
-            "published_date": f"{b['year']}-01-01",
-            "pages": b["pages"],
+            "product_type": p["product_type"],
+            "attributes": p["attributes"],
         })
-    data_json = json.dumps(books_data)
+    data_json = json.dumps(products_data)
     code = f"""
-from books.models import Book, BookInventory
+from products.models import Product, ProductInventory
 import json
 data = json.loads('''{data_json}''')
+created_count = 0
+updated_count = 0
 for d in data:
-    Book.objects.get_or_create(isbn=d["isbn"], defaults={{
-        "title": d["title"], "author": d["author"], "price": d["price"],
+    _, created = Product.objects.update_or_create(sku=d["sku"], defaults={{
+        "title": d["title"], "brand": d["brand"], "price": d["price"],
         "description": d["description"], "cover_image": d["cover_image"],
-        "category_id": d["category_id"], "published_date": d["published_date"],
-        "language": "English", "pages": d["pages"], "is_active": True
+        "category_id": d["category_id"], "product_type": d["product_type"],
+        "attributes": d["attributes"], "is_active": True
     }})
-for book in Book.objects.all():
-    BookInventory.objects.get_or_create(book=book, defaults={{"stock_quantity": 50}})
-print("Books:", Book.objects.count())
+    if created:
+        created_count += 1
+    else:
+        updated_count += 1
+for product in Product.objects.all():
+    ProductInventory.objects.get_or_create(product=product, defaults={{"stock_quantity": 50}})
+print("Products:", Product.objects.count())
+print("Created:", created_count, "Updated:", updated_count)
 """
-    return run_exec("book-service", code)
+    return run_exec("product-service", code, timeout=120)
 
 
 def seed_admin():
-    print("3. Creating admin account (admin@bookstore.com / " + DEFAULT_PASSWORD + ")...")
+    print("3. Creating admin account (admin@store.com / " + DEFAULT_PASSWORD + ")...")
     code = """
 from management.models import ManagerUser
 u, created = ManagerUser.objects.get_or_create(
-    email="admin@bookstore.com",
+    email="admin@store.com",
     defaults={"first_name": "Admin", "last_name": "Manager", "is_active": True}
 )
 if created:
@@ -175,15 +384,15 @@ if created:
 else:
     print("Admin already exists")
 """
-    return run_exec("manager-service", code)
+    return run_exec("manager-service", code, timeout=120)
 
 
 def seed_staff():
-    print("4. Creating staff account (staff@bookstore.com / " + DEFAULT_PASSWORD + ")...")
+    print("4. Creating staff account (staff@store.com / " + DEFAULT_PASSWORD + ")...")
     code = """
 from staff.models import StaffMember
 u, created = StaffMember.objects.get_or_create(
-    email="staff@bookstore.com",
+    email="staff@store.com",
     defaults={"first_name": "Staff", "last_name": "User", "role": "SALES", "is_admin": True, "is_active": True}
 )
 if created:
@@ -193,13 +402,20 @@ if created:
 else:
     print("Staff already exists")
 """
-    return run_exec("staff-service", code)
+    return run_exec("staff-service", code, timeout=120)
 
 
 def seed_customers():
-    print("5. Creating 10 customer accounts (user1@example.com ... user10@example.com / " + DEFAULT_PASSWORD + ")...")
-    customers_json = json.dumps(CUSTOMERS)
-    code = f"""
+    n = NUM_SAMPLE_CUSTOMERS
+    print(
+        f"5. Creating {n} customer accounts "
+        f"(user1@example.com … user{n}@example.com / {DEFAULT_PASSWORD}) in batches…"
+    )
+    batch_size = 60
+    for start in range(0, len(CUSTOMERS), batch_size):
+        chunk = CUSTOMERS[start : start + batch_size]
+        customers_json = json.dumps(chunk)
+        code = f"""
 from customers.models import Customer
 import json
 data = json.loads('''{customers_json}''')
@@ -211,31 +427,110 @@ for d in data:
     if created:
         u.set_password("Password123!")
         u.save()
-print("Customers:", Customer.objects.count())
+print("Batch done; total customers:", Customer.objects.count())
 """
-    return run_exec("customer-service", code)
+        if not run_exec("customer-service", code, timeout=300):
+            return False
+    return True
+
+
+def seed_orders():
+    nc = NUM_SAMPLE_CUSTOMERS
+    print(f"6. Creating sample orders for {nc} customers (may take a few minutes)…")
+    products_mini = [
+        {"id": i + 1, "title": p["title"], "price": p["price"]}
+        for i, p in enumerate(SAMPLE_PRODUCTS)
+    ]
+    products_json = json.dumps(products_mini)
+
+    code = f"""
+from orders.models import Order, OrderItem
+from decimal import Decimal
+import json
+import random
+
+if Order.objects.exists():
+    print("Deleting old orders to create fresh ones...")
+    Order.objects.all().delete()
+
+products = json.loads('''{products_json}''')
+_status_pool = (
+    ["PAID"] * 22 + ["SHIPPED"] * 18 + ["DELIVERED"] * 22
+    + ["PENDING"] * 8 + ["CONFIRMED"] * 6 + ["CANCELLED"] * 2 + ["REFUNDED"] * 2
+)
+addresses = [
+    "123 Hanoi", "456 Ho Chi Minh", "789 Da Nang", "101 Can Tho", "202 Hue",
+    "303 Nha Trang", "404 Hai Phong", "505 Vung Tau", "606 Dalat", "707 Quy Nhon",
+]
+orders_created = 0
+for cid in range(1, {nc + 1}):
+    num_orders = random.randint(2, 5)
+    for _ in range(num_orders):
+        status = random.choice(_status_pool)
+        address = addresses[(cid - 1) % len(addresses)] + f" — Customer {{cid}}"
+        order = Order.objects.create(
+            customer_id=cid,
+            status=status,
+            total_amount=0,
+            shipping_address=address,
+            payment_method=random.choice(["CREDIT_CARD", "PAYPAL", "CASH_ON_DELIVERY"])
+        )
+        total = Decimal("0.00")
+        num_items = random.randint(1, 4)
+        items = random.sample(products, num_items)
+        for item in items:
+            qty = random.randint(1, 3)
+            price = Decimal(str(item["price"]))
+            total += price * qty
+            OrderItem.objects.create(
+                order=order,
+                product_id=item["id"],
+                product_title=item["title"],
+                quantity=qty,
+                unit_price=price,
+            )
+        order.total_amount = total
+        order.save()
+        orders_created += 1
+
+print("Orders created:", orders_created)
+"""
+    return run_exec("order-service", code, timeout=1800)
 
 
 def main():
     print("=" * 50)
-    print("BookStore Seed Data Script")
+    print("Ecommerce Store Seed Data Script")
     print("=" * 50)
     print("Ensure Docker Compose is running: docker compose up -d")
     print()
+    print(
+        "Tip — xóa hết dữ liệu DB Docker rồi seed lại từ đầu (dev): "
+        "docker compose down -v && docker compose up -d"
+    )
+    print(
+        "      Sau đó chạy lại script này. Neo4j không nằm trong Postgres: "
+        "POST http://localhost:8000/api/graph-rag/sync/ (hoặc xóa graph trong Neo4j Browser)."
+    )
+    print()
 
     ok = True
-    ok &= seed_catalog()
-    ok &= seed_books()
+    ok &= seed_products()
     ok &= seed_admin()
     ok &= seed_staff()
     ok &= seed_customers()
+    ok &= seed_orders()
 
     print()
     if ok:
         print("Done! Summary:")
-        print("  - Admin:  admin@bookstore.com / " + DEFAULT_PASSWORD)
-        print("  - Staff:  staff@bookstore.com / " + DEFAULT_PASSWORD)
-        print("  - Users:  user1@example.com ... user10@example.com / " + DEFAULT_PASSWORD)
+        print("  - Admin:  admin@store.com / " + DEFAULT_PASSWORD)
+        print("  - Staff:  staff@store.com / " + DEFAULT_PASSWORD)
+        print(
+            f"  - Users:  user1@example.com … user{NUM_SAMPLE_CUSTOMERS}@example.com / "
+            + DEFAULT_PASSWORD
+        )
+        print("  - Sample orders created for users!")
     else:
         print("Some steps failed. Check errors above.")
         sys.exit(1)

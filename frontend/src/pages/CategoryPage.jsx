@@ -3,9 +3,9 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import { SlidersHorizontal, ChevronDown, X, Search, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import BookCard from "../components/BookCard";
+import ProductCard from "../components/ProductCard";
 import CategoryFilter from "../components/CategoryFilter";
-import { useBooks } from "../hooks/useBooks";
+import { useProducts } from "../hooks/useProducts";
 import { useCatalog } from "../hooks/useCatalog";
 
 const SORT_OPTIONS = [
@@ -46,17 +46,17 @@ export default function CategoryPage() {
     return p;
   }, [categoryId, localSearch, selectedPriceRange]);
 
-  const { results: books, loading, refetch } = useBooks(apiParams);
+  const { results: products, loading, refetch } = useProducts(apiParams);
 
 
   const activeCategoryLabel =
     categoryId === "all"
-      ? "All Books"
-      : categories.find((c) => String(c.id) === String(categoryId))?.name ?? "Books";
+      ? "All Products"
+      : categories.find((c) => String(c.id) === String(categoryId))?.name ?? "Products";
 
-  const filteredBooks = useMemo(() => {
-    let result = [...books];
-    if (onlyNew) result = result.filter((b) => b.isNew);
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+    if (onlyNew) result = result.filter((p) => p.isNew);
     switch (sort) {
       case "price-asc":
         return result.sort((a, b) => a.price - b.price);
@@ -67,7 +67,7 @@ export default function CategoryPage() {
       default:
         return result;
     }
-  }, [books, sort, onlyNew]);
+  }, [products, sort, onlyNew]);
 
   const activeFiltersCount =
     (selectedPriceRange ? 1 : 0) + (onlyNew ? 1 : 0) + (localSearch ? 1 : 0);
@@ -104,7 +104,7 @@ export default function CategoryPage() {
                   {activeCategoryLabel}
                 </h1>
                 <p className="text-gray-500 text-sm mt-2">
-                  {loading ? "Loading…" : `${filteredBooks.length} book${filteredBooks.length !== 1 ? "s" : ""} available`}
+                  {loading ? "Loading…" : `${filteredProducts.length} product${filteredProducts.length !== 1 ? "s" : ""} available`}
                 </p>
               </div>
 
@@ -125,7 +125,7 @@ export default function CategoryPage() {
               <input
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
-                placeholder="Search by title, author…"
+                placeholder="Search by title, brand…"
                 className="bg-transparent text-sm outline-none flex-1 text-gray-900 placeholder-gray-400"
               />
               {localSearch && (
@@ -225,10 +225,10 @@ export default function CategoryPage() {
             <div className="flex justify-center py-16">
               <Loader2 size={32} className="animate-spin text-gray-400" />
             </div>
-          ) : filteredBooks.length > 0 ? (
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-10">
-              {filteredBooks.map((book) => (
-                <BookCard key={book.id} book={book} showRating={!!book.rating} />
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} showRating={!!product.rating} />
               ))}
             </div>
           ) : (
@@ -236,7 +236,7 @@ export default function CategoryPage() {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Search size={22} className="text-gray-400" />
               </div>
-              <h3 className="font-serif text-xl font-medium text-gray-900 mb-2">No books found</h3>
+              <h3 className="font-serif text-xl font-medium text-gray-900 mb-2">No products found</h3>
               <p className="text-gray-500 text-sm mb-6">Try adjusting your filters or search term.</p>
               <button onClick={clearFilters} className="btn-primary">Clear filters</button>
             </div>

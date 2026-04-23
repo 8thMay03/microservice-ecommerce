@@ -26,20 +26,20 @@ def _fetch_all_orders() -> List[dict]:
     return []
 
 
-def _fetch_book_categories(book_ids: List[int]) -> Dict[int, int]:
-  if not book_ids:
+def _fetch_product_categories(product_ids: List[int]) -> Dict[int, int]:
+  if not product_ids:
     return {}
   try:
     resp = requests.post(
-      f"{settings.BOOK_SERVICE_URL}/internal/books/bulk/",
-      json={"ids": book_ids},
+      f"{settings.PRODUCT_SERVICE_URL}/internal/products/bulk/",
+      json={"ids": product_ids},
       timeout=5,
     )
     resp.raise_for_status()
     data = resp.json()
-    return {b["id"]: b.get("category_id") for b in data}
+    return {p["id"]: p.get("category_id") for p in data}
   except requests.RequestException as exc:
-    logger.error("analytics: failed to fetch book categories: %s", exc)
+    logger.error("analytics: failed to fetch product categories: %s", exc)
     return {}
 
 
@@ -50,7 +50,7 @@ def build_overview() -> dict:
     - overall orders/items
     - simple recommendation conversion:
         impressions = number of cached recommendations
-        conversions = recommendations where (customer, book) later appears in an order
+        conversions = recommendations where (customer, product) later appears in an order
   """
   orders = _fetch_all_orders()
   if not orders:
@@ -64,19 +64,19 @@ def build_overview() -> dict:
     }
 
   total_items = 0
-  all_book_ids: List[int] = []
+  all_product_ids: List[int] = []
   for o in orders:
     for it in o.get("items", []):
       total_items += it.get("quantity", 1)
-      all_book_ids.append(it["book_id"])
+      all_product_ids.append(it["product_id"])
 
-  cat_map = _fetch_book_categories(list(set(all_book_ids)))
+  cat_map = _fetch_product_categories(list(set(all_product_ids)))
   cat_counts: Dict[int, int] = defaultdict(int)
   for o in orders:
     for it in o.get("items", []):
-      bid = it["book_id"]
+      pid = it["product_id"]
       qty = it.get("quantity", 1)
-      cat_id = cat_map.get(bid)
+      cat_id = cat_map.get(pid)
       if cat_id is not None:
         cat_counts[cat_id] += qty
 
@@ -84,15 +84,15 @@ def build_overview() -> dict:
   impressions = RecommendationCache.objects.count()
   conversions = 0
   if impressions:
-    # Build fast lookup of (customer_id, book_id) that were actually purchased.
+    # Build fast lookup of (customer_id, product_id) that were actually purchased.
     purchased_pairs = set()
     for o in orders:
       cid = o.get("customer_id")
       for it in o.get("items", []):
-        purchased_pairs.add((cid, it["book_id"]))
+        purchased_pairs.add((cid, it["product_id"]))
 
-    for rec in RecommendationCache.objects.all().only("customer_id", "book_id"):
-      if (rec.customer_id, rec.book_id) in purchased_pairs:
+    for rec in RecommendationCache.objects.all().only("customer_id", "product_id"):
+      if (rec.customer_id, rec.product_id) in purchased_pairs:
         conversions += 1
 
   rate = (conversions / impressions) if impressions else 0.0
@@ -105,4 +105,3 @@ def build_overview() -> dict:
     "recommendation_conversions": conversions,
     "recommendation_conversion_rate": round(rate, 4),
   }
-

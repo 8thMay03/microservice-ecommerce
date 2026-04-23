@@ -6,5 +6,5 @@ urlpatterns = [
     path("login/", StaffLoginView.as_view(), name="staff-login"),
     path("", StaffListView.as_view(), name="staff-list"),
     path("<int:pk>/", StaffDetailView.as_view(), name="staff-detail"),
-    path("inventory/<int:book_id>/", InventoryManagementView.as_view(), name="staff-inventory"),
+    path("inventory/<int:product_id>/", InventoryManagementView.as_view(), name="staff-inventory"),
 ]

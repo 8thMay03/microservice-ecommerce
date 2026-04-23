@@ -4,10 +4,10 @@ import { AuthProvider } from "./context/AuthContext";
 import PageTransition from "./components/PageTransition";
 import HomePage from "./pages/HomePage";
 import CategoryPage from "./pages/CategoryPage";
-import BookDetailPage from "./pages/BookDetailPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import AdminBooksPage from "./pages/AdminBooksPage";
+import AdminProductsPage from "./pages/AdminProductsPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -26,18 +26,18 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/category/:id" element={<CategoryPage />} />
-            <Route path="/book/:id" element={<BookDetailPage />} />
+            <Route path="/product/:id" element={<ProductDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/orders" element={<OrderHistoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/admin/books" element={<AdminBooksPage />} />
+            <Route path="/admin/products" element={<AdminProductsPage />} />
             <Route path="/admin/orders" element={<AdminOrdersPage />} />
             <Route path="/admin/revenue" element={<AdminRevenuePage />} />
-                    <Route path="/admin/staff" element={<AdminStaffPage />} />
-                    <Route path="/admin/users" element={<AdminUsersPage />} />
-                    <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+            <Route path="/admin/staff" element={<AdminStaffPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
           </Routes>
         </PageTransition>
         <ChatWidget />

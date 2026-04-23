@@ -1,19 +1,27 @@
 === THÔNG TIN CỬA HÀNG ===
-Chào mừng bạn đến với hệ thống thư viện Microservice Bookstore - Nơi tinh hoa tri thức hội tụ.
-Cửa hàng chuyên cung cấp các loại sách thuộc lĩnh vực: Khoa học máy tính, Công nghệ thông tin, Tiểu thuyết, Kinh tế, và Kỹ năng sống.
+Chào mừng bạn đến với hệ thống Ecommerce Microservice Store - Nền tảng mua sắm đa sản phẩm.
+Cửa hàng cung cấp nhiều loại sản phẩm: Sách, Thiết bị điện tử, Quần áo thời trang, Thực phẩm & Đồ uống, Đồ gia dụng, và Dụng cụ thể thao.
+
+=== CÁC LOẠI SẢN PHẨM ===
+- Sách (Books): Tiểu thuyết, Khoa học, Lịch sử, Công nghệ, Kỹ năng sống
+- Thiết bị điện tử (Electronics): Điện thoại, Máy tính, Tai nghe, Camera
+- Quần áo (Clothing): Nam, Nữ, Trẻ em, Giày dép
+- Thực phẩm & Đồ uống (Food & Beverages): Đồ ăn nhẹ, Nước uống, Thực phẩm hữu cơ
+- Đồ gia dụng (Home & Garden): Nội thất, Đồ bếp, Trang trí nhà
+- Thể thao (Sports & Outdoors): Dụng cụ tập gym, Đồ cắm trại, Thể thao đồng đội
 
 === CHÍNH SÁCH VÀ DỊCH VỤ ===
 - Giờ làm việc: 8h00 đến 22h00 các ngày trong tuần.
-- Chính sách đổi trả: Khách hàng có thể đổi trả sách trong vòng 7 ngày kể từ ngày nhận hàng với điều kiện sách còn nguyên bao bì, tem mác, không bị nhăn rách hoặc dính bẩn.
-- Giao hàng: Miễn phí giao hàng cho đơn hàng trên 300.000 VNĐ. Nếu dưới 300.000 VNĐ phí ship mặc định là 30.000 VNĐ. Thời gian giao hàng từ 2-5 ngày tùy khu vực.
-- Liên hệ hỗ trợ: Tổng đài hotline 1900-1234 hoặc email: support@microservice-bookstore.com.
+- Chính sách đổi trả: Khách hàng có thể đổi trả sản phẩm trong vòng 7 ngày kể từ ngày nhận hàng với điều kiện sản phẩm còn nguyên bao bì, tem mác, không bị hư hỏng.
+- Giao hàng: Miễn phí giao hàng cho đơn hàng trên $50. Dưới $50 phí ship là $5.99. Thời gian giao hàng từ 2-5 ngày tùy khu vực.
+- Liên hệ hỗ trợ: Tổng đài hotline 1900-1234 hoặc email: support@microservice-store.com.
 - Người quản lý hệ thống: Nguyễn Khôi.
 
-=== GỢI Ý CÁC SÁCH NỔI BẬT ===
-- Nếu bạn yêu thích pháp thuật và phiêu lưu, "Harry Potter" của J.K. Rowling là một lựa chọn tuyệt vời. Cuốn sách kể về cậu bé phù thuỷ học tại trường Hogwarts.
-- Nếu bạn là một lập trình viên muốn nâng cao tay nghề code sạch, "Clean Code" (Mã sạch) của Robert C. Martin là cuốn sách gối đầu giường bạn bắt buộc phải có.
-- Về văn học kinh điển Việt Nam, "Sống mòn" của Nam Cao khắc họa sâu sắc số phận người trí thức nghèo trước Cách mạng.
-- "Đắc Nhân Tâm" (How to Win Friends and Influence People) là cuốn sách nổi tiếng nhất thế giới về nghệ thuật giao tiếp, thấu hiểu con người.
+=== GỢI Ý SẢN PHẨM NỔI BẬT ===
+- Nếu bạn yêu thích pháp thuật và phiêu lưu, "Harry Potter" của J.K. Rowling là một lựa chọn tuyệt vời trong danh mục Sách.
+- Nếu bạn là lập trình viên, "Clean Code" của Robert C. Martin là sách gối đầu giường.
+- Với người yêu công nghệ, chúng tôi có các sản phẩm điện tử từ nhiều thương hiệu uy tín.
+- Thời trang nam nữ đa dạng từ casual đến formal, phong cách hiện đại.
 
 === CÁCH MUA HÀNG ===
-Bạn có thể tìm sách trên thanh Tìm kiếm (Search) ở trên cùng. Hoặc duyệt qua danh mục sách ở mục Browse. Bấm vào sách và chọn "Add to Cart" (Thêm vào giỏ).
+Bạn có thể tìm sản phẩm trên thanh Tìm kiếm (Search) ở trên cùng. Hoặc duyệt qua danh mục sản phẩm ở mục Browse. Bấm vào sản phẩm và chọn "Add to Cart" (Thêm vào giỏ). Bạn cũng có thể lọc theo loại sản phẩm (Books, Electronics, Clothing...) để tìm nhanh hơn.

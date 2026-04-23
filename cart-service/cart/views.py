@@ -27,7 +27,7 @@ class CartItemView(APIView):
         data = serializer.validated_data
         item, created = CartItem.objects.get_or_create(
             cart=cart,
-            book_id=data["book_id"],
+            product_id=data["product_id"],
             defaults={"quantity": data["quantity"], "unit_price": data["unit_price"]},
         )
         if not created:

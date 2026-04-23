@@ -1,6 +1,6 @@
 from django.urls import path
-from .internal_views import InternalTopRatedBooksView
+from .internal_views import InternalTopRatedProductsView
 
 urlpatterns = [
-    path("top-rated/", InternalTopRatedBooksView.as_view(), name="internal-top-rated"),
+    path("top-rated/", InternalTopRatedProductsView.as_view(), name="internal-top-rated"),
 ]

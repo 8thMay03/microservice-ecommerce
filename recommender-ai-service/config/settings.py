@@ -50,16 +50,25 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="recommender_db"),
-        "USER": config("DB_USER", default="postgres"),
-        "PASSWORD": config("DB_PASSWORD", default="postgres123"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+DB_ENGINE = config("DB_ENGINE", default="postgres").lower()
+if DB_ENGINE == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": str(BASE_DIR / "db.sqlite3"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME", default="recommender_db"),
+            "USER": config("DB_USER", default="postgres"),
+            "PASSWORD": config("DB_PASSWORD", default="postgres123"),
+            "HOST": config("DB_HOST", default="localhost"),
+            "PORT": config("DB_PORT", default="5432"),
+        }
+    }
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
@@ -73,7 +82,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Inter-service URLs
 ORDER_SERVICE_URL = config("ORDER_SERVICE_URL", default="http://order-service:8000")
-BOOK_SERVICE_URL = config("BOOK_SERVICE_URL", default="http://book-service:8000")
+PRODUCT_SERVICE_URL = config("PRODUCT_SERVICE_URL", default="http://product-service:8000")
 COMMENT_RATE_SERVICE_URL = config(
     "COMMENT_RATE_SERVICE_URL", default="http://comment-rate-service:8000"
 )

@@ -7,7 +7,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ["id", "book_id", "book_title", "quantity", "unit_price", "subtotal"]
+        fields = ["id", "product_id", "product_title", "quantity", "unit_price", "subtotal"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -24,8 +24,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class CreateOrderItemSerializer(serializers.Serializer):
-    book_id = serializers.IntegerField()
-    book_title = serializers.CharField(max_length=300, default="")
+    product_id = serializers.IntegerField()
+    product_title = serializers.CharField(max_length=300, default="")
     quantity = serializers.IntegerField(min_value=1)
     unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
 

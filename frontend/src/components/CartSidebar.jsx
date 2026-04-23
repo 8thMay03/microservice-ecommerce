@@ -64,14 +64,14 @@ export default function CartSidebar() {
               <div>
                 <p className="font-medium text-gray-900">Your cart is empty</p>
                 <p className="text-sm text-gray-500 mt-1">
-                  Discover books you'll love.
+                  Discover products you'll love.
                 </p>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
                 className="btn-primary mt-2"
               >
-                Browse books
+                Browse products
               </button>
             </div>
           ) : (
@@ -79,7 +79,7 @@ export default function CartSidebar() {
               {items.map((item) => (
                 <li key={item.id} className="flex gap-4">
                   <Link
-                    to={`/book/${item.id}`}
+                    to={`/product/${item.id}`}
                     onClick={() => setIsOpen(false)}
                     className="shrink-0"
                   >
@@ -92,13 +92,13 @@ export default function CartSidebar() {
 
                   <div className="flex-1 min-w-0">
                     <Link
-                      to={`/book/${item.id}`}
+                      to={`/product/${item.id}`}
                       onClick={() => setIsOpen(false)}
                       className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-gray-600 transition-colors"
                     >
                       {item.title}
                     </Link>
-                    <p className="text-xs text-gray-500 mt-0.5">{item.author}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{item.brand || item.author}</p>
 
                     <div className="flex items-center justify-between mt-3">
                       {/* Qty controls */}

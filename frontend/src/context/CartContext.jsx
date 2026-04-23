@@ -10,13 +10,13 @@ function cartReducer(state, action) {
     case "SET":
       return action.items ?? [];
     case "ADD": {
-      const existing = state.find((i) => i.id === action.book.id);
+      const existing = state.find((i) => i.id === action.product.id);
       if (existing) {
         return state.map((i) =>
-          i.id === action.book.id ? { ...i, qty: i.qty + 1 } : i
+          i.id === action.product.id ? { ...i, qty: i.qty + 1 } : i
         );
       }
-      return [...state, { ...action.book, qty: 1 }];
+      return [...state, { ...action.product, qty: 1 }];
     }
     case "REMOVE":
       return state.filter((i) => i.id !== action.id);
@@ -85,8 +85,8 @@ export function CartProvider({ children }) {
     toastTimer.current = setTimeout(() => setToast(null), 2000);
   }, []);
 
-  const addToCart = (book) => {
-    dispatch({ type: "ADD", book });
+  const addToCart = (product) => {
+    dispatch({ type: "ADD", product });
     showToast("Đã thêm vào giỏ hàng");
   };
 

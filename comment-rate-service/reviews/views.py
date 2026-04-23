@@ -5,21 +5,21 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from .models import Rating, Comment
-from .serializers import RatingSerializer, CommentSerializer, BookRatingSummarySerializer
+from .serializers import RatingSerializer, CommentSerializer, ProductRatingSummarySerializer
 
 
 class RatingListView(APIView):
     """
-    GET  /api/reviews/ratings/?book_id=<id>   — ratings for a book
-    POST /api/reviews/ratings/                — submit/update a rating
+    GET  /api/reviews/ratings/?product_id=<id>   — ratings for a product
+    POST /api/reviews/ratings/                    — submit/update a rating
     """
 
     def get(self, request):
-        book_id = request.query_params.get("book_id")
+        product_id = request.query_params.get("product_id")
         customer_id = request.query_params.get("customer_id")
         qs = Rating.objects.all()
-        if book_id:
-            qs = qs.filter(book_id=book_id)
+        if product_id:
+            qs = qs.filter(product_id=product_id)
         if customer_id:
             qs = qs.filter(customer_id=customer_id)
         return Response(RatingSerializer(qs, many=True).data)
@@ -30,7 +30,7 @@ class RatingListView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         rating, created = Rating.objects.update_or_create(
-            book_id=serializer.validated_data["book_id"],
+            product_id=serializer.validated_data["product_id"],
             customer_id=serializer.validated_data["customer_id"],
             defaults={"score": serializer.validated_data["score"]},
         )
@@ -40,15 +40,15 @@ class RatingListView(APIView):
         )
 
 
-class BookRatingSummaryView(APIView):
-    """GET /api/reviews/ratings/book/<book_id>/summary/"""
+class ProductRatingSummaryView(APIView):
+    """GET /api/reviews/ratings/product/<product_id>/summary/"""
 
-    def get(self, request, book_id):
-        agg = Rating.objects.filter(book_id=book_id).aggregate(
+    def get(self, request, product_id):
+        agg = Rating.objects.filter(product_id=product_id).aggregate(
             average_score=Avg("score"), total_ratings=Count("id")
         )
         return Response({
-            "book_id": book_id,
+            "product_id": product_id,
             "average_score": round(agg["average_score"] or 0, 2),
             "total_ratings": agg["total_ratings"],
         })
@@ -56,15 +56,15 @@ class BookRatingSummaryView(APIView):
 
 class CommentListView(APIView):
     """
-    GET  /api/reviews/comments/?book_id=<id>   — comments for a book
-    POST /api/reviews/comments/                — post a comment
+    GET  /api/reviews/comments/?product_id=<id>   — comments for a product
+    POST /api/reviews/comments/                    — post a comment
     """
 
     def get(self, request):
-        book_id = request.query_params.get("book_id")
+        product_id = request.query_params.get("product_id")
         qs = Comment.objects.filter(is_approved=True)
-        if book_id:
-            qs = qs.filter(book_id=book_id)
+        if product_id:
+            qs = qs.filter(product_id=product_id)
         return Response(CommentSerializer(qs, many=True).data)
 
     def post(self, request):

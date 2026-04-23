@@ -6,7 +6,7 @@ networks:
 
 volumes:
   customer_db_data:
-  book_db_data:
+  product_db_data:
   catalog_db_data:
   cart_db_data:
   order_db_data:
@@ -17,6 +17,8 @@ volumes:
   recommender_behavior_weights:
   staff_db_data:
   manager_db_data:
+  neo4j_data:
+  neo4j_logs:
 
 
 services:
@@ -34,14 +36,14 @@ services:
     networks:
       - bookstore-network
 
-  book-db:
+  product-db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: book_db
+      POSTGRES_DB: product_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     volumes:
-      - book_db_data:/var/lib/postgresql/data
+      - product_db_data:/var/lib/postgresql/data
     networks:
       - bookstore-network
 
@@ -149,6 +151,8 @@ services:
   # ─────────────────────────────────────────────
   customer-service:
     build: ./customer-service
+    volumes:
+      - ./customer-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "customer-secret-key-change-in-prod"
@@ -164,26 +168,30 @@ services:
       - bookstore-network
     restart: unless-stopped
 
-  book-service:
-    build: ./book-service
+  product-service:
+    build: ./product-service
+    volumes:
+      - ./product-service:/app
     environment:
       DEBUG: "True"
-      SECRET_KEY: "book-secret-key-change-in-prod"
+      SECRET_KEY: "product-secret-key-change-in-prod"
       MANAGER_JWT_SECRET: "manager-secret-key-change-in-prod"
       STAFF_JWT_SECRET: "staff-secret-key-change-in-prod"
-      DB_NAME: book_db
+      DB_NAME: product_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
-      DB_HOST: book-db
+      DB_HOST: product-db
       DB_PORT: "5432"
     depends_on:
-      - book-db
+      - product-db
     networks:
       - bookstore-network
     restart: unless-stopped
 
   catalog-service:
     build: ./catalog-service
+    volumes:
+      - ./catalog-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "catalog-secret-key-change-in-prod"
@@ -202,6 +210,8 @@ services:
 
   cart-service:
     build: ./cart-service
+    volumes:
+      - ./cart-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "cart-secret-key-change-in-prod"
@@ -218,6 +228,8 @@ services:
 
   order-service:
     build: ./order-service
+    volumes:
+      - ./order-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "order-secret-key-change-in-prod"
@@ -269,6 +281,8 @@ services:
 
   comment-rate-service:
     build: ./comment-rate-service
+    volumes:
+      - ./comment-rate-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "comment-secret-key-change-in-prod"
@@ -284,7 +298,13 @@ services:
     restart: unless-stopped
 
   recommender-ai-service:
-    build: ./recommender-ai-service
+    build:
+      context: ./recommender-ai-service
+      cache_from:
+        - type=local,src=.buildcache/recommender-ai-service
+      cache_to:
+        - type=local,dest=.buildcache/recommender-ai-service,mode=max
+
     environment:
       DEBUG: "True"
       SECRET_KEY: "recommender-secret-key-change-in-prod"
@@ -294,12 +314,13 @@ services:
       DB_HOST: recommender-db
       DB_PORT: "5432"
       ORDER_SERVICE_URL: "http://order-service:8000"
-      BOOK_SERVICE_URL: "http://book-service:8000"
+      PRODUCT_SERVICE_URL: "http://product-service:8000"
       COMMENT_RATE_SERVICE_URL: "http://comment-rate-service:8000"
       BEHAVIOR_MODEL_PATH: "/app/recommender/weights/behavior_model.pt"
       BEHAVIOR_DL_ENABLED: "True"
       BEHAVIOR_TORCH_DEVICE: "auto"
     volumes:
+      - ./recommender-ai-service:/app
       - recommender_behavior_weights:/app/recommender/weights
     depends_on:
       - recommender-db
@@ -309,6 +330,8 @@ services:
 
   staff-service:
     build: ./staff-service
+    volumes:
+      - ./staff-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "staff-secret-key-change-in-prod"
@@ -317,7 +340,7 @@ services:
       DB_PASSWORD: postgres123
       DB_HOST: staff-db
       DB_PORT: "5432"
-      BOOK_SERVICE_URL: "http://book-service:8000"
+      PRODUCT_SERVICE_URL: "http://product-service:8000"
     depends_on:
       - staff-db
     networks:
@@ -326,6 +349,8 @@ services:
 
   manager-service:
     build: ./manager-service
+    volumes:
+      - ./manager-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "manager-secret-key-change-in-prod"
@@ -343,10 +368,66 @@ services:
       - bookstore-network
     restart: unless-stopped
 
+  # ─────────────────────────────────────────────
+  #  NEO4J (knowledge graph) + graph-rag sync API
+  # ─────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.15-community
+    environment:
+      # User/password: neo4j / value of NEO4J_PASSWORD (default for local dev)
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-neo4jpassword123}
+      NEO4J_server_memory_heap_initial__size: "512m"
+      NEO4J_server_memory_heap_max__size: "1G"
+      NEO4J_server_memory_pagecache_size: "256m"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - bookstore-network
+    restart: unless-stopped
+
+  graph-rag-service:
+    build: ./graph-rag-service
+    volumes:
+      - ./graph-rag-service:/app
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-neo4jpassword123}
+      ORDER_SERVICE_URL: "http://order-service:8000"
+      PRODUCT_SERVICE_URL: "http://product-service:8000"
+      CATALOG_SERVICE_URL: "http://catalog-service:8000"
+      CUSTOMER_SERVICE_URL: "http://customer-service:8000"
+      RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000"
+    depends_on:
+      - neo4j
+      - order-service
+      - product-service
+      - catalog-service
+      - customer-service
+      - recommender-ai-service
+    networks:
+      - bookstore-network
+    restart: unless-stopped
+
   rag-service:
     build: ./rag-service
+    volumes:
+      - ./rag-service:/app
     environment:
-      GOOGLE_API_KEY: "AIzaSyDhE_hNTq_mEqHeEIryUTX9htnbNiThVKs"
+      # Set in repo-root .env (not committed). Docker Compose loads .env for substitution.
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      GRAPH_RAG_SERVICE_URL: "http://graph-rag-service:8000"
+    depends_on:
+      - graph-rag-service
     networks:
       - bookstore-network
     restart: unless-stopped
@@ -372,20 +453,22 @@ services:
       DEBUG: "True"
       SECRET_KEY: "gateway-secret-key-change-in-prod"
       CUSTOMER_SERVICE_URL: "http://customer-service:8000"
-      BOOK_SERVICE_URL: "http://book-service:8000"
+      PRODUCT_SERVICE_URL: "http://product-service:8000"
       CATALOG_SERVICE_URL: "http://catalog-service:8000"
       CART_SERVICE_URL: "http://cart-service:8000"
       ORDER_SERVICE_URL: "http://order-service:8000"
       PAY_SERVICE_URL: "http://pay-service:8000"
       SHIP_SERVICE_URL: "http://ship-service:8000"
       COMMENT_RATE_SERVICE_URL: "http://comment-rate-service:8000"
-      RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000"
+      RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000" # for docker
+      # RECOMMENDER_SERVICE_URL: "http://host.docker.internal:8006" # for local
       STAFF_SERVICE_URL: "http://staff-service:8000"
       MANAGER_SERVICE_URL: "http://manager-service:8000"
       RAG_SERVICE_URL: "http://rag-service:8000"
+      GRAPH_RAG_SERVICE_URL: "http://graph-rag-service:8000"
     depends_on:
       - customer-service
-      - book-service
+      - product-service
       - catalog-service
       - cart-service
       - order-service
@@ -396,6 +479,7 @@ services:
       - staff-service
       - manager-service
       - rag-service
+      - graph-rag-service
     networks:
       - bookstore-network
     restart: unless-stopped

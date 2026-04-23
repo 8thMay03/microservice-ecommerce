@@ -18,13 +18,13 @@ async function request(url, options = {}, token = null) {
 }
 
 export const reviewsApi = {
-  getComments: (bookId) =>
-    request(`${BASE}/comments/?book_id=${bookId}`),
+  getComments: (productId) =>
+    request(`${BASE}/comments/?product_id=${productId}`),
 
-  postComment: ({ book_id, customer_id, customer_name, content }, token) =>
+  postComment: ({ product_id, customer_id, customer_name, content }, token) =>
     request(`${BASE}/comments/`, {
       method: "POST",
-      body: JSON.stringify({ book_id, customer_id, customer_name, content }),
+      body: JSON.stringify({ product_id, customer_id, customer_name, content }),
     }, token),
 
   updateComment: (id, { content }, token) =>
@@ -36,15 +36,15 @@ export const reviewsApi = {
   deleteComment: (id, token) =>
     request(`${BASE}/comments/${id}/`, { method: "DELETE" }, token),
 
-  getRatingSummary: (bookId) =>
-    request(`${BASE}/ratings/book/${bookId}/summary/`),
+  getRatingSummary: (productId) =>
+    request(`${BASE}/ratings/product/${productId}/summary/`),
 
-  getMyRating: (bookId, customerId) =>
-    request(`${BASE}/ratings/?book_id=${bookId}&customer_id=${customerId}`),
+  getMyRating: (productId, customerId) =>
+    request(`${BASE}/ratings/?product_id=${productId}&customer_id=${customerId}`),
 
-  postRating: ({ book_id, customer_id, score }, token) =>
+  postRating: ({ product_id, customer_id, score }, token) =>
     request(`${BASE}/ratings/`, {
       method: "POST",
-      body: JSON.stringify({ book_id, customer_id, score }),
+      body: JSON.stringify({ product_id, customer_id, score }),
     }, token),
 };

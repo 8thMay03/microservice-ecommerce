@@ -7,12 +7,12 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItem
-        fields = ["id", "book_id", "quantity", "unit_price", "subtotal", "added_at"]
+        fields = ["id", "product_id", "quantity", "unit_price", "subtotal", "added_at"]
         read_only_fields = ["id", "added_at", "subtotal"]
 
 
 class CartItemWriteSerializer(serializers.Serializer):
-    book_id = serializers.IntegerField()
+    product_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
     unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
 

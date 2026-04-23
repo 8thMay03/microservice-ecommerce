@@ -33,10 +33,10 @@ export const cartApi = {
   get: (customer_id, token) =>
     request(`/api/cart/${customer_id}/`, {}, token),
 
-  addItem: (customer_id, { book_id, quantity, unit_price }, token) =>
+  addItem: (customer_id, { product_id, quantity, unit_price }, token) =>
     request(`/api/cart/${customer_id}/items/`, {
       method: "POST",
-      body: JSON.stringify({ book_id, quantity, unit_price }),
+      body: JSON.stringify({ product_id, quantity, unit_price }),
     }, token),
 
   clear: (customer_id, token) =>

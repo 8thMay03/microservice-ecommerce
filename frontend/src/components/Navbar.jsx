@@ -66,7 +66,7 @@ export default function Navbar() {
               )}
 
               {isAuthenticated && (isAdmin || isStaff) && (
-                <li><NavLink to="/admin/books" className={navLinkClass}>Manage Books</NavLink></li>
+                <li><NavLink to="/admin/products" className={navLinkClass}>Manage Products</NavLink></li>
               )}
 
               {isAuthenticated && isAdmin && (
@@ -87,7 +87,7 @@ export default function Navbar() {
               <form onSubmit={handleSearch} className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 w-56 gap-2">
                 <Search size={14} className="text-gray-400 shrink-0" />
                 <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search books..." className="bg-transparent text-sm outline-none flex-1 text-gray-900 placeholder-gray-400 w-full" />
+                  placeholder="Search products..." className="bg-transparent text-sm outline-none flex-1 text-gray-900 placeholder-gray-400 w-full" />
                 <button type="button" onClick={() => { setSearchOpen(false); setQuery(""); }} className="text-gray-400 hover:text-gray-600">
                   <X size={14} />
                 </button>
@@ -197,9 +197,9 @@ export default function Navbar() {
                     )}
 
                     {(isAdmin || isStaff) && (
-                      <Link to="/admin/books" onClick={() => setMobileMenuOpen(false)}
+                      <Link to="/admin/products" onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 rounded-lg hover:bg-gray-100">
-                        <BookOpen size={14} /> Manage Books
+                        <BookOpen size={14} /> Manage Products
                       </Link>
                     )}
 

@@ -38,8 +38,8 @@ class OrderListView(APIView):
         if "items" in data and data["items"]:
             cart_items = [
                 {
-                    "book_id": it["book_id"],
-                    "book_title": it.get("book_title", f"Book #{it['book_id']}"),
+                    "product_id": it["product_id"],
+                    "product_title": it.get("product_title", f"Product #{it['product_id']}"),
                     "quantity": it["quantity"],
                     "unit_price": it["unit_price"],
                 }
@@ -74,8 +74,8 @@ class OrderListView(APIView):
             for item in cart_items:
                 OrderItem.objects.create(
                     order=order,
-                    book_id=item["book_id"],
-                    book_title=item.get("book_title", f"Book #{item['book_id']}"),
+                    product_id=item["product_id"],
+                    product_title=item.get("product_title", f"Product #{item['product_id']}"),
                     quantity=item["quantity"],
                     unit_price=Decimal(str(item["unit_price"])),
                 )

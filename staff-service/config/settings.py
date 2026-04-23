@@ -80,4 +80,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "staff.StaffMember"
 
-BOOK_SERVICE_URL = config("BOOK_SERVICE_URL", default="http://book-service:8000")
+PRODUCT_SERVICE_URL = config("PRODUCT_SERVICE_URL", default="http://product-service:8000")

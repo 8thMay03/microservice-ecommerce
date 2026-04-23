@@ -2,12 +2,12 @@
 Recommendation engine.
 
 Strategy 1 — Collaborative Filtering (user-based):
-  Build a customer × book purchase matrix from order history.
+  Build a customer × product purchase matrix from order history.
   Find the k nearest customers using cosine similarity.
-  Recommend books those neighbours bought that the target customer hasn't.
+  Recommend products those neighbours bought that the target customer hasn't.
 
 Strategy 2 — Popularity Fallback:
-  When the target customer has no history, return the most-purchased books overall.
+  When the target customer has no history, return the most-purchased products overall.
 """
 import logging
 from collections import defaultdict
@@ -52,45 +52,45 @@ def _fetch_customer_orders(customer_id: int) -> List[dict]:
         return []
 
 
-def _extract_book_ids_from_orders(orders: List[dict]) -> List[int]:
-    book_ids = []
+def _extract_product_ids_from_orders(orders: List[dict]) -> List[int]:
+    product_ids = []
     for order in orders:
         for item in order.get("items", []):
-            book_ids.append(item["book_id"])
-    return list(set(book_ids))
+            product_ids.append(item["product_id"])
+    return list(set(product_ids))
 
 
-def _fetch_book_categories(book_ids: List[int]) -> Dict[int, int]:
-    """Return {book_id: category_id} using book-service internal bulk API."""
-    if not book_ids:
+def _fetch_product_categories(product_ids: List[int]) -> Dict[int, int]:
+    """Return {product_id: category_id} using product-service internal bulk API."""
+    if not product_ids:
         return {}
     try:
         resp = requests.post(
-            f"{settings.BOOK_SERVICE_URL}/internal/books/bulk/",
-            json={"ids": book_ids},
+            f"{settings.PRODUCT_SERVICE_URL}/internal/products/bulk/",
+            json={"ids": product_ids},
             timeout=5,
         )
         resp.raise_for_status()
         data = resp.json()
-        return {b["id"]: b.get("category_id") for b in data}
+        return {p["id"]: p.get("category_id") for p in data}
     except requests.RequestException as exc:
-        logger.warning("Failed to fetch book categories: %s", exc)
+        logger.warning("Failed to fetch product categories: %s", exc)
         return {}
 
 
-def _fetch_rating_scores(book_ids: List[int]) -> Dict[int, float]:
+def _fetch_rating_scores(product_ids: List[int]) -> Dict[int, float]:
     """
-    Return {book_id: rating_factor} where factor in [0.7, 1.1].
+    Return {product_id: rating_factor} where factor in [0.7, 1.1].
     Uses average rating from comment-rate-service; neutral (1.0) if no data.
     """
-    if not book_ids:
+    if not product_ids:
         return {}
 
     factors: Dict[int, float] = {}
-    for book_id in book_ids:
+    for product_id in product_ids:
         try:
             resp = requests.get(
-                f"{settings.COMMENT_RATE_SERVICE_URL}/api/reviews/ratings/book/{book_id}/summary/",
+                f"{settings.COMMENT_RATE_SERVICE_URL}/api/reviews/ratings/product/{product_id}/summary/",
                 timeout=3,
             )
             if resp.status_code != 200:
@@ -99,7 +99,7 @@ def _fetch_rating_scores(book_ids: List[int]) -> Dict[int, float]:
             avg = data.get("average_score") or 0
             # Normalize 0–5 → 0–1, then map to [0.7, 1.1]
             norm = max(0.0, min(1.0, float(avg) / 5.0))
-            factors[book_id] = 0.7 + 0.4 * norm
+            factors[product_id] = 0.7 + 0.4 * norm
         except requests.RequestException:
             continue
         except (TypeError, ValueError):
@@ -111,41 +111,41 @@ def _apply_rating_boost(scores: List[Tuple[int, float]]) -> List[Tuple[int, floa
     """Multiply base scores by rating factor."""
     if not scores:
         return scores
-    book_ids = [bid for bid, _ in scores]
-    rating_factors = _fetch_rating_scores(book_ids)
+    product_ids = [pid for pid, _ in scores]
+    rating_factors = _fetch_rating_scores(product_ids)
     boosted: List[Tuple[int, float]] = []
-    for book_id, base in scores:
-        factor = rating_factors.get(book_id, 1.0)
-        boosted.append((book_id, base * factor))
+    for product_id, base in scores:
+        factor = rating_factors.get(product_id, 1.0)
+        boosted.append((product_id, base * factor))
     # Re-normalize to [0,1]
     if not boosted:
         return scores
     max_score = max(s for _, s in boosted) or 1.0
-    return [(bid, s / max_score) for bid, s in boosted]
+    return [(pid, s / max_score) for pid, s in boosted]
 
 
 def _apply_category_preference(
     customer_id: int,
     scores: List[Tuple[int, float]],
-    customer_books: Dict[int, set],
+    customer_products: Dict[int, set],
 ) -> List[Tuple[int, float]]:
     """
-    Slightly boost books that belong to categories the customer buys a lot.
+    Slightly boost products that belong to categories the customer buys a lot.
     """
-    if not scores or customer_id not in customer_books:
+    if not scores or customer_id not in customer_products:
         return scores
 
-    purchased_book_ids = list(customer_books[customer_id])
-    cat_map = _fetch_book_categories(
-        list({*purchased_book_ids, *[bid for bid, _ in scores]})
+    purchased_product_ids = list(customer_products[customer_id])
+    cat_map = _fetch_product_categories(
+        list({*purchased_product_ids, *[pid for pid, _ in scores]})
     )
     if not cat_map:
         return scores
 
     # Count categories in customer's history
     cat_counts: Dict[int, int] = defaultdict(int)
-    for bid in purchased_book_ids:
-        cat_id = cat_map.get(bid)
+    for pid in purchased_product_ids:
+        cat_id = cat_map.get(pid)
         if cat_id is not None:
             cat_counts[cat_id] += 1
     if not cat_counts:
@@ -153,17 +153,17 @@ def _apply_category_preference(
 
     max_count = max(cat_counts.values()) or 1
     boosted: List[Tuple[int, float]] = []
-    for book_id, base in scores:
-        cat_id = cat_map.get(book_id)
+    for product_id, base in scores:
+        cat_id = cat_map.get(product_id)
         if cat_id is None or cat_id not in cat_counts:
-            boosted.append((book_id, base))
+            boosted.append((product_id, base))
             continue
         pref = cat_counts[cat_id] / max_count  # 0–1
         factor = 1.0 + 0.2 * pref  # up to +20%
-        boosted.append((book_id, base * factor))
+        boosted.append((product_id, base * factor))
 
     max_score = max(s for _, s in boosted) or 1.0
-    return [(bid, s / max_score) for bid, s in boosted]
+    return [(pid, s / max_score) for pid, s in boosted]
 
 
 def _deep_learning_recommendations(
@@ -171,14 +171,14 @@ def _deep_learning_recommendations(
 ) -> Optional[List[Tuple[int, float]]]:
     """
     Neural CF (model_behavior) over completed orders; None if no checkpoint
-    or user/book out of vocabulary.
+    or user/product out of vocabulary.
     """
     from . import model_behavior as mb
 
     purchased: Set[int] = set()
     for order in _fetch_customer_orders(customer_id):
         for item in order.get("items", []):
-            purchased.add(item["book_id"])
+            purchased.add(item["product_id"])
 
     pool = max(limit * 5, 20)
     raw = mb.recommend_from_behavior_model(customer_id, purchased, pool)
@@ -186,33 +186,33 @@ def _deep_learning_recommendations(
         return None
 
     max_score = max(s for _, s in raw) or 1.0
-    normalized = [(book_id, s / max_score) for book_id, s in raw]
+    normalized = [(product_id, s / max_score) for product_id, s in raw]
 
     all_orders = _fetch_all_orders()
-    customer_books: dict = defaultdict(set)
+    customer_products: dict = defaultdict(set)
     for order in all_orders:
         cid = order.get("customer_id")
         for item in order.get("items", []):
-            customer_books[cid].add(item["book_id"])
+            customer_products[cid].add(item["product_id"])
 
     boosted = _apply_rating_boost(normalized)
-    boosted = _apply_category_preference(customer_id, boosted, customer_books)
+    boosted = _apply_category_preference(customer_id, boosted, customer_products)
     boosted.sort(key=lambda x: x[1], reverse=True)
     return boosted[:limit]
 
 
 def popularity_based(limit: int = 10) -> List[Tuple[int, float]]:
-    """Return (book_id, score) tuples ranked by purchase frequency, boosted by rating."""
+    """Return (product_id, score) tuples ranked by purchase frequency, boosted by rating."""
     orders = _fetch_all_orders()
     counts: dict = defaultdict(int)
     for order in orders:
         for item in order.get("items", []):
-            counts[item["book_id"]] += item.get("quantity", 1)
+            counts[item["product_id"]] += item.get("quantity", 1)
     ranked = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:limit]
     if not ranked:
         return []
     max_count = ranked[0][1] or 1
-    base_scores = [(book_id, count / max_count) for book_id, count in ranked]
+    base_scores = [(product_id, count / max_count) for product_id, count in ranked]
     return _apply_rating_boost(base_scores)
 
 
@@ -225,44 +225,44 @@ def collaborative_filtering(customer_id: int, limit: int = 10) -> List[Tuple[int
         logger.warning("numpy/sklearn not available; falling back to popularity.")
         return popularity_based(limit)
 
-    # Build customer → set of purchased book_ids
+    # Build customer → set of purchased product_ids
     all_orders = _fetch_all_orders()
-    customer_books: dict = defaultdict(set)
+    customer_products: dict = defaultdict(set)
     for order in all_orders:
         cid = order.get("customer_id")
         for item in order.get("items", []):
-            customer_books[cid].add(item["book_id"])
+            customer_products[cid].add(item["product_id"])
 
-    if not customer_books:
+    if not customer_products:
         return popularity_based(limit)
 
-    all_book_ids = sorted({b for books in customer_books.values() for b in books})
-    if not all_book_ids:
+    all_product_ids = sorted({p for products in customer_products.values() for p in products})
+    if not all_product_ids:
         return popularity_based(limit)
 
-    book_index = {b: i for i, b in enumerate(all_book_ids)}
-    customer_ids = sorted(customer_books.keys())
+    product_index = {p: i for i, p in enumerate(all_product_ids)}
+    customer_ids = sorted(customer_products.keys())
     customer_index = {c: i for i, c in enumerate(customer_ids)}
 
-    matrix = np.zeros((len(customer_ids), len(all_book_ids)), dtype=np.float32)
-    for cid, books in customer_books.items():
-        for book in books:
-            matrix[customer_index[cid], book_index[book]] = 1.0
+    matrix = np.zeros((len(customer_ids), len(all_product_ids)), dtype=np.float32)
+    for cid, products in customer_products.items():
+        for product in products:
+            matrix[customer_index[cid], product_index[product]] = 1.0
 
     if customer_id not in customer_index:
         return popularity_based(limit)
 
     target_vec = matrix[customer_index[customer_id]].reshape(1, -1)
     similarities = cosine_similarity(target_vec, matrix)[0]
-    already_purchased = customer_books[customer_id]
+    already_purchased = customer_products[customer_id]
 
     candidate_scores: dict = defaultdict(float)
     for i, sim in enumerate(similarities):
         if customer_ids[i] == customer_id or sim <= 0:
             continue
-        for book_id in customer_books[customer_ids[i]]:
-            if book_id not in already_purchased:
-                candidate_scores[book_id] += sim
+        for product_id in customer_products[customer_ids[i]]:
+            if product_id not in already_purchased:
+                candidate_scores[product_id] += sim
 
     if not candidate_scores:
         return popularity_based(limit)
@@ -272,12 +272,12 @@ def collaborative_filtering(customer_id: int, limit: int = 10) -> List[Tuple[int
         return []
 
     max_score = ranked[0][1] or 1
-    base_scores = [(book_id, score / max_score) for book_id, score in ranked]
+    base_scores = [(product_id, score / max_score) for product_id, score in ranked]
 
-    # 1) boost by book rating
+    # 1) boost by product rating
     boosted = _apply_rating_boost(base_scores)
     # 2) boost by customer's preferred categories
-    boosted = _apply_category_preference(customer_id, boosted, customer_books)
+    boosted = _apply_category_preference(customer_id, boosted, customer_products)
     return boosted
 
 
@@ -298,18 +298,18 @@ def get_recommendations(
     return results, "collaborative_filtering"
 
 
-def item_based_similar(book_id: int, limit: int = 10) -> List[Tuple[int, float]]:
+def item_based_similar(product_id: int, limit: int = 10) -> List[Tuple[int, float]]:
     """
-    Simple item-based recommendation: books often bought together with `book_id`.
+    Simple item-based recommendation: products often bought together with `product_id`.
     """
     orders = _fetch_all_orders()
     co_counts: Dict[int, int] = defaultdict(int)
     for order in orders:
-        items = [it["book_id"] for it in order.get("items", [])]
-        if book_id not in items:
+        items = [it["product_id"] for it in order.get("items", [])]
+        if product_id not in items:
             continue
         for other in items:
-            if other == book_id:
+            if other == product_id:
                 continue
             co_counts[other] += 1
 
@@ -318,6 +318,6 @@ def item_based_similar(book_id: int, limit: int = 10) -> List[Tuple[int, float]]
 
     ranked = sorted(co_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
     max_count = ranked[0][1] or 1
-    base_scores = [(bid, c / max_count) for bid, c in ranked]
+    base_scores = [(pid, c / max_count) for pid, c in ranked]
     # Boost by ratings as well
     return _apply_rating_boost(base_scores)

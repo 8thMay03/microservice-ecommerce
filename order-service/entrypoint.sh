@@ -6,7 +6,7 @@ while ! nc -z "$DB_HOST" "$DB_PORT"; do
 done
 echo "PostgreSQL is ready."
 
-python manage.py makemigrations --noinput
+python manage.py makemigrations orders --noinput
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 

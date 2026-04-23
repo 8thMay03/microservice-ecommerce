@@ -87,20 +87,20 @@ class StaffDetailView(APIView):
 
 
 class InventoryManagementView(APIView):
-    """Staff action: adjust book stock via book-service."""
+    """Staff action: adjust product stock via product-service."""
     permission_classes = [IsAuthenticated]
 
-    def patch(self, request, book_id):
+    def patch(self, request, product_id):
         delta = request.data.get("delta")
         if delta is None:
             return Response({"error": "delta is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             resp = requests.patch(
-                f"{settings.BOOK_SERVICE_URL}/api/books/{book_id}/inventory/",
+                f"{settings.PRODUCT_SERVICE_URL}/api/products/{product_id}/inventory/",
                 json={"delta": int(delta)},
                 timeout=5,
             )
             return Response(resp.json(), status=resp.status_code)
         except requests.RequestException as exc:
-            logger.error("book-service inventory update failed: %s", exc)
-            return Response({"error": "book-service unavailable"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            logger.error("product-service inventory update failed: %s", exc)
+            return Response({"error": "product-service unavailable"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

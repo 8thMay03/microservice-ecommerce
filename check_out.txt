@@ -1,0 +1,13 @@
+time="2026-04-13T01:14:33+07:00" level=warning msg="D:\\GithubRepositories\\microservice-bookstore\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+time="2026-04-13T01:14:33+07:00" level=warning msg="Found orphan containers ([microservice-bookstore-book-service-1 microservice-bookstore-book-db-1]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container microservice-bookstore-comment-rate-db-1 Running 
+ Container microservice-bookstore-comment-rate-service-run-bdc3d289a06a Creating 
+ Container microservice-bookstore-comment-rate-service-run-bdc3d289a06a Created 
+SystemCheckError: System check identified some issues:
+
+ERRORS:
+<class 'reviews.admin.CommentAdmin'>: (admin.E108) The value of 'list_display[1]' refers to 'book_id', which is not a callable, an attribute of 'CommentAdmin', or an attribute or method on 'reviews.Comment'.
+<class 'reviews.admin.RatingAdmin'>: (admin.E108) The value of 'list_display[1]' refers to 'book_id', which is not a callable, an attribute of 'RatingAdmin', or an attribute or method on 'reviews.Rating'.
+
+System check identified 2 issues (0 silenced).
+

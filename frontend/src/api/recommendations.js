@@ -1,10 +1,10 @@
 const BASE = "/api/recommendations";
 
 /**
- * Get book recommendations for a customer.
+ * Get product recommendations for a customer.
  * @param {number} customerId - Customer ID; use 0 for guest (returns popular picks).
  * @param {{ limit?: number }} options
- * @returns {Promise<{ recommendations: Array<{ book_id, title, author, price, cover_image, category_id }> }>}
+ * @returns {Promise<{ recommendations: Array<{ product_id, title, brand, price, cover_image, category_id, product_type }> }>}
  */
 export async function getRecommendations(customerId, options = {}) {
   const limit = options.limit ?? 8;

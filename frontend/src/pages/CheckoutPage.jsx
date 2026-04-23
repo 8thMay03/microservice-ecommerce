@@ -49,8 +49,8 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-stone-50 px-4">
         <BookMarked size={40} className="text-gray-300 mb-4" />
         <h1 className="font-serif text-2xl font-medium text-gray-900 mb-2">Cart is empty</h1>
-        <p className="text-gray-500 text-sm mb-6">Add some books before checking out.</p>
-        <Link to="/category/all" className="btn-primary">Browse books</Link>
+        <p className="text-gray-500 text-sm mb-6">Add some products before checking out.</p>
+        <Link to="/category/all" className="btn-primary">Browse products</Link>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function CheckoutPage() {
           <div className="border-t border-gray-100 pt-5 mt-2 space-y-2">
             {orderResult.items?.map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-gray-600 truncate flex-1 mr-4">{item.book_title} x{item.quantity}</span>
+                <span className="text-gray-600 truncate flex-1 mr-4">{item.product_title} x{item.quantity}</span>
                 <span className="font-medium text-gray-900 shrink-0">${Number(item.subtotal).toFixed(2)}</span>
               </div>
             ))}
@@ -121,10 +121,10 @@ export default function CheckoutPage() {
         shipping_address: shippingAddress,
         payment_method: form.paymentMethod,
         items: items.map((item) => ({
-          book_id: item.id,
+          product_id: item.id,
           quantity: item.qty,
           unit_price: item.price,
-          book_title: item.title || "",
+          product_title: item.title || "",
         })),
       }, token);
 
