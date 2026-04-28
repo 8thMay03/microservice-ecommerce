@@ -1,10 +1,11 @@
-Django==4.2.7
-djangorestframework==3.14.0
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+sqlalchemy==2.0.30
+alembic==1.13.1
+asyncpg==0.29.0
 psycopg2-binary==2.9.9
-gunicorn==21.2.0
 python-decouple==3.8
-requests==2.31.0
-django-cors-headers==4.3.1
+httpx==0.27.0
 numpy==1.26.2
 scikit-learn==1.3.2
 # CPU build by default. For NVIDIA GPU after pip install -r requirements.txt:

@@ -7,3 +7,4 @@ __pycache__
 # Local secrets (copy from .env.example)
 .env
 .env.local
+
