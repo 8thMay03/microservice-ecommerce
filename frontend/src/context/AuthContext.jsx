@@ -33,28 +33,13 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      // Try customer first
       const data = await authApi.login(email, password);
-      _persist(data.tokens.access, { ...data.customer, role: "customer" });
+      _persist(data.tokens.access, { ...data.user, role: data.user.role });
       return { ok: true };
-    } catch {
-      // Try manager
-      try {
-        const data = await authApi.loginManager(email, password);
-        _persist(data.tokens.access, { ...data.manager, role: "manager" });
-        return { ok: true };
-      } catch {
-        // Try staff
-        try {
-          const data = await authApi.loginStaff(email, password);
-          _persist(data.tokens.access, { ...data.staff, role: "staff" });
-          return { ok: true };
-        } catch (err) {
-          const msg = err.message || "Invalid email or password.";
-          setError(msg);
-          return { ok: false, error: msg };
-        }
-      }
+    } catch (err) {
+      const msg = err.message || "Invalid email or password.";
+      setError(msg);
+      return { ok: false, error: msg };
     } finally {
       setLoading(false);
     }
@@ -65,7 +50,7 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const data = await authApi.register(payload);
-      _persist(data.tokens.access, { ...data.customer, role: "customer" });
+      _persist(data.tokens.access, { ...data.user, role: data.user.role });
       return { ok: true };
     } catch (err) {
       const msg = err.message || "Registration failed. Please try again.";

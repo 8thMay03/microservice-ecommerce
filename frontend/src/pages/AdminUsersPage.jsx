@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
-import { adminCustomersApi } from "../api/admin";
+import { adminUsersApi } from "../api/admin";
 
 export default function AdminUsersPage() {
   const { user, token, isAuthenticated } = useAuth();
@@ -19,7 +19,7 @@ export default function AdminUsersPage() {
   const fetchCustomers = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const data = await adminCustomersApi.list(token);
+      const data = await adminUsersApi.list(token);
       setCustomers(Array.isArray(data) ? data : data.results ?? []);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
@@ -30,7 +30,7 @@ export default function AdminUsersPage() {
   const handleDeactivate = async (id) => {
     if (!confirm("Deactivate this user?")) return;
     try {
-      await adminCustomersApi.deactivate(id, token);
+      await adminUsersApi.deactivate(id, token);
       setCustomers((prev) => prev.filter((c) => c.id !== id));
     } catch { /* ignore */ }
   };

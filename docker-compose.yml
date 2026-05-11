@@ -5,7 +5,7 @@ networks:
     driver: bridge
 
 volumes:
-  customer_db_data:
+  user_db_data:
   product_db_data:
   catalog_db_data:
   cart_db_data:
@@ -15,8 +15,6 @@ volumes:
   comment_rate_db_data:
   recommender_db_data:
   recommender_behavior_weights:
-  staff_db_data:
-  manager_db_data:
   neo4j_data:
   neo4j_logs:
 
@@ -25,14 +23,14 @@ services:
   # ─────────────────────────────────────────────
   #  DATABASES
   # ─────────────────────────────────────────────
-  customer-db:
+  user-db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: customer_db
+      POSTGRES_DB: user_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     volumes:
-      - customer_db_data:/var/lib/postgresql/data
+      - user_db_data:/var/lib/postgresql/data
     networks:
       - bookstore-network
 
@@ -124,46 +122,47 @@ services:
     networks:
       - bookstore-network
 
-  staff-db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: staff_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-    volumes:
-      - staff_db_data:/var/lib/postgresql/data
-    networks:
-      - bookstore-network
-
-  manager-db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: manager_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-    volumes:
-      - manager_db_data:/var/lib/postgresql/data
-    networks:
-      - bookstore-network
-
   # ─────────────────────────────────────────────
   #  APPLICATION SERVICES
   # ─────────────────────────────────────────────
-  customer-service:
-    build: ./customer-service
+  user-service:
+    build: ./user-service
     volumes:
-      - ./customer-service:/app
+      - ./user-service:/app
     environment:
       DEBUG: "True"
-      SECRET_KEY: "customer-secret-key-change-in-prod"
-      DB_NAME: customer_db
+      SECRET_KEY: "user-secret-key-change-in-prod"
+      DB_NAME: user_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
-      DB_HOST: customer-db
+      DB_HOST: user-db
       DB_PORT: "5432"
+      JWT_SECRET_KEY: "unified-jwt-secret-change-in-prod"
+      CART_SERVICE_URL: "http://cart-service:8000"
+      PRODUCT_SERVICE_URL: "http://product-service:8000"
+      ORDER_SERVICE_URL: "http://order-service:8000"
+    depends_on:
+      - user-db
+    networks:
+      - bookstore-network
+    restart: unless-stopped
+
+  auth-service:
+    build: ./auth-service
+    volumes:
+      - ./auth-service:/app
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: "auth-secret-key-change-in-prod"
+      DB_NAME: user_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_HOST: user-db
+      DB_PORT: "5432"
+      JWT_SECRET_KEY: "unified-jwt-secret-change-in-prod"
       CART_SERVICE_URL: "http://cart-service:8000"
     depends_on:
-      - customer-db
+      - user-db
     networks:
       - bookstore-network
     restart: unless-stopped
@@ -175,8 +174,7 @@ services:
     environment:
       DEBUG: "True"
       SECRET_KEY: "product-secret-key-change-in-prod"
-      MANAGER_JWT_SECRET: "manager-secret-key-change-in-prod"
-      STAFF_JWT_SECRET: "staff-secret-key-change-in-prod"
+      JWT_SECRET_KEY: "unified-jwt-secret-change-in-prod"
       DB_NAME: product_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
@@ -195,8 +193,7 @@ services:
     environment:
       DEBUG: "True"
       SECRET_KEY: "catalog-secret-key-change-in-prod"
-      MANAGER_JWT_SECRET: "manager-secret-key-change-in-prod"
-      STAFF_JWT_SECRET: "staff-secret-key-change-in-prod"
+      JWT_SECRET_KEY: "unified-jwt-secret-change-in-prod"
       DB_NAME: catalog_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
@@ -332,53 +329,12 @@ services:
       - bookstore-network
     restart: unless-stopped
 
-  staff-service:
-    build: ./staff-service
-    volumes:
-      - ./staff-service:/app
-    environment:
-      DEBUG: "True"
-      SECRET_KEY: "staff-secret-key-change-in-prod"
-      DB_NAME: staff_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_HOST: staff-db
-      DB_PORT: "5432"
-      PRODUCT_SERVICE_URL: "http://product-service:8000"
-    depends_on:
-      - staff-db
-    networks:
-      - bookstore-network
-    restart: unless-stopped
-
-  manager-service:
-    build: ./manager-service
-    volumes:
-      - ./manager-service:/app
-    environment:
-      DEBUG: "True"
-      SECRET_KEY: "manager-secret-key-change-in-prod"
-      DB_NAME: manager_db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_HOST: manager-db
-      DB_PORT: "5432"
-      ORDER_SERVICE_URL: "http://order-service:8000"
-      CUSTOMER_SERVICE_URL: "http://customer-service:8000"
-      STAFF_SERVICE_URL: "http://staff-service:8000"
-    depends_on:
-      - manager-db
-    networks:
-      - bookstore-network
-    restart: unless-stopped
-
   # ─────────────────────────────────────────────
   #  NEO4J (knowledge graph) + graph-rag sync API
   # ─────────────────────────────────────────────
   neo4j:
     image: neo4j:5.15-community
     environment:
-      # User/password: neo4j / value of NEO4J_PASSWORD (default for local dev)
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-neo4jpassword123}
       NEO4J_server_memory_heap_initial__size: "512m"
       NEO4J_server_memory_heap_max__size: "1G"
@@ -407,14 +363,14 @@ services:
       ORDER_SERVICE_URL: "http://order-service:8000"
       PRODUCT_SERVICE_URL: "http://product-service:8000"
       CATALOG_SERVICE_URL: "http://catalog-service:8000"
-      CUSTOMER_SERVICE_URL: "http://customer-service:8000"
+      USER_SERVICE_URL: "http://user-service:8000"
       RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000"
     depends_on:
       - neo4j
       - order-service
       - product-service
       - catalog-service
-      - customer-service
+      - user-service
       - recommender-ai-service
     networks:
       - bookstore-network
@@ -425,7 +381,6 @@ services:
     volumes:
       - ./rag-service:/app
     environment:
-      # Set in repo-root .env (not committed). Docker Compose loads .env for substitution.
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       AI_PROVIDER: ${AI_PROVIDER:-gemini}
@@ -437,7 +392,7 @@ services:
     restart: unless-stopped
 
   # ─────────────────────────────────────────────
-  #  FRONTEND  (React + Vite → nginx)
+  #  FRONTEND  (React + Vite -> nginx)
   # ─────────────────────────────────────────────
   frontend:
     build: ./frontend
@@ -461,7 +416,8 @@ services:
     environment:
       DEBUG: "True"
       SECRET_KEY: "gateway-secret-key-change-in-prod"
-      CUSTOMER_SERVICE_URL: "http://customer-service:8000"
+      USER_SERVICE_URL: "http://user-service:8000"
+      AUTH_SERVICE_URL: "http://auth-service:8000"
       PRODUCT_SERVICE_URL: "http://product-service:8000"
       CATALOG_SERVICE_URL: "http://catalog-service:8000"
       CART_SERVICE_URL: "http://cart-service:8000"
@@ -469,14 +425,12 @@ services:
       PAY_SERVICE_URL: "http://pay-service:8000"
       SHIP_SERVICE_URL: "http://ship-service:8000"
       COMMENT_RATE_SERVICE_URL: "http://comment-rate-service:8000"
-      RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000" # for docker
-      # RECOMMENDER_SERVICE_URL: "http://host.docker.internal:8006" # for local
-      STAFF_SERVICE_URL: "http://staff-service:8000"
-      MANAGER_SERVICE_URL: "http://manager-service:8000"
+      RECOMMENDER_SERVICE_URL: "http://recommender-ai-service:8000"
       RAG_SERVICE_URL: "http://rag-service:8000"
       GRAPH_RAG_SERVICE_URL: "http://graph-rag-service:8000"
     depends_on:
-      - customer-service
+      - user-service
+      - auth-service
       - product-service
       - catalog-service
       - cart-service
@@ -485,8 +439,6 @@ services:
       - ship-service
       - comment-rate-service
       - recommender-ai-service
-      - staff-service
-      - manager-service
       - rag-service
       - graph-rag-service
     networks:

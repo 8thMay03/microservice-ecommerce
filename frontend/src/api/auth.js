@@ -1,4 +1,5 @@
-const BASE = "/api/customers";
+const BASE_AUTH = "/api/auth";
+const BASE_USERS = "/api/users";
 
 async function request(url, options = {}) {
   const res = await fetch(url, {
@@ -9,7 +10,6 @@ async function request(url, options = {}) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // Surface DRF field errors as a readable string
     const detail =
       data.detail ||
       data.non_field_errors?.[0] ||
@@ -30,9 +30,9 @@ function authRequest(url, options = {}, token = null) {
 }
 
 export const profileApi = {
-  get: (token) => authRequest(`${BASE}/profile/`, {}, token),
+  get: (token) => authRequest(`${BASE_USERS}/profile/`, {}, token),
   update: (data, token) =>
-    authRequest(`${BASE}/profile/`, {
+    authRequest(`${BASE_USERS}/profile/`, {
       method: "PUT",
       body: JSON.stringify(data),
     }, token),
@@ -40,25 +40,13 @@ export const profileApi = {
 
 export const authApi = {
   login: (email, password) =>
-    request(`${BASE}/login/`, {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
-
-  loginManager: (email, password) =>
-    request("/api/managers/login/", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
-
-  loginStaff: (email, password) =>
-    request("/api/staff/login/", {
+    request(`${BASE_AUTH}/login/`, {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
 
   register: ({ email, password, password_confirm, first_name, last_name, phone, address }) =>
-    request(`${BASE}/register/`, {
+    request(`${BASE_AUTH}/register/`, {
       method: "POST",
       body: JSON.stringify({ email, password, password_confirm, first_name, last_name, phone, address }),
     }),

@@ -25,33 +25,34 @@ export const adminOrdersApi = {
     }, token),
 };
 
-export const adminCustomersApi = {
-  list: (token) => request("/api/customers/", {}, token),
-  get: (id, token) => request(`/api/customers/${id}/`, {}, token),
+export const adminUsersApi = {
+  list: (token) => request("/api/users/", {}, token),
+  listByRole: (role, token) => request(`/api/users/?role=${role}`, {}, token),
+  get: (id, token) => request(`/api/users/${id}/`, {}, token),
   update: (id, data, token) =>
-    request(`/api/customers/${id}/`, {
+    request(`/api/users/${id}/`, {
       method: "PUT",
       body: JSON.stringify(data),
     }, token),
   deactivate: (id, token) =>
-    request(`/api/customers/${id}/`, { method: "DELETE" }, token),
+    request(`/api/users/${id}/`, { method: "DELETE" }, token),
 };
 
 export const adminStaffApi = {
-  list: (token) => request("/api/staff/", {}, token),
-  get: (id, token) => request(`/api/staff/${id}/`, {}, token),
+  list: (token) => request("/api/users/?role=STAFF", {}, token),
+  get: (id, token) => request(`/api/users/${id}/`, {}, token),
   create: (data, token) =>
-    request("/api/staff/register/", {
+    request("/api/users/register/", {
       method: "POST",
       body: JSON.stringify(data),
     }, token),
   update: (id, data, token) =>
-    request(`/api/staff/${id}/`, {
+    request(`/api/users/${id}/`, {
       method: "PUT",
       body: JSON.stringify(data),
     }, token),
   deactivate: (id, token) =>
-    request(`/api/staff/${id}/`, { method: "DELETE" }, token),
+    request(`/api/users/${id}/`, { method: "DELETE" }, token),
 };
 
 export const adminAnalyticsApi = {

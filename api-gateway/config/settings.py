@@ -45,7 +45,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Downstream service registry ───────────────────────────────────────────────
 SERVICE_REGISTRY = {
-    "customers":       config("CUSTOMER_SERVICE_URL",    default="http://customer-service:8000"),
+    "users":           config("USER_SERVICE_URL",         default="http://user-service:8000"),
+    "auth":            config("AUTH_SERVICE_URL",          default="http://auth-service:8000"),
     "products":        config("PRODUCT_SERVICE_URL",     default="http://product-service:8000"),
     "catalog":         config("CATALOG_SERVICE_URL",     default="http://catalog-service:8000"),
     "cart":            config("CART_SERVICE_URL",         default="http://cart-service:8000"),
@@ -54,8 +55,6 @@ SERVICE_REGISTRY = {
     "shipments":       config("SHIP_SERVICE_URL",         default="http://ship-service:8000"),
     "reviews":         config("COMMENT_RATE_SERVICE_URL", default="http://comment-rate-service:8000"),
     "recommendations": config("RECOMMENDER_SERVICE_URL",  default="http://recommender-ai-service:8000"),
-    "staff":           config("STAFF_SERVICE_URL",        default="http://staff-service:8000"),
-    "managers":        config("MANAGER_SERVICE_URL",      default="http://manager-service:8000"),
     "rag":             config("RAG_SERVICE_URL",          default="http://rag-service:8000"),
     "graph-rag":       config("GRAPH_RAG_SERVICE_URL",   default="http://graph-rag-service:8000"),
 }

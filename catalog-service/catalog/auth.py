@@ -1,5 +1,5 @@
 """
-Validates JWT tokens issued by manager-service or staff-service.
+Validates JWT tokens issued by auth-service.
 """
 import jwt
 from django.conf import settings
@@ -16,23 +16,31 @@ class ManagerJWTAuthentication(authentication.BaseAuthentication):
             return None
 
         token = auth_header[len(self.keyword) + 1 :].strip()
-        secrets = [
-            getattr(settings, "MANAGER_JWT_SECRET", None),
-            getattr(settings, "STAFF_JWT_SECRET", None),
-        ]
-        secrets = [s for s in secrets if s]
+        secret = getattr(settings, "JWT_SECRET_KEY", None)
+        if not secret:
+            raise exceptions.AuthenticationFailed("JWT not configured.")
 
-        for secret in secrets:
-            try:
-                payload = jwt.decode(
-                    token,
-                    secret,
-                    algorithms=["HS256"],
-                    options={"verify_exp": True},
-                )
-                user = type("Manager", (), {"is_authenticated": True, "id": payload.get("user_id")})()
-                return (user, token)
-            except jwt.InvalidTokenError:
-                continue
+        try:
+            payload = jwt.decode(
+                token,
+                secret,
+                algorithms=["HS256"],
+                options={"verify_exp": True},
+            )
+        except jwt.InvalidTokenError:
+            raise exceptions.AuthenticationFailed("Invalid or expired token.")
 
-        raise exceptions.AuthenticationFailed("Invalid or expired token.")
+        role = payload.get("role", "")
+        if role not in ("STAFF", "MANAGER"):
+            raise exceptions.AuthenticationFailed("Staff or manager access required.")
+
+        user = type(
+            "User",
+            (),
+            {
+                "is_authenticated": True,
+                "id": payload.get("user_id"),
+                "role": role,
+            },
+        )()
+        return (user, token)

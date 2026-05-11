@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 CATALOG_SERVICE_URL = config("CATALOG_SERVICE_URL", default="http://catalog-service:8000")
 PRODUCT_SERVICE_URL = config("PRODUCT_SERVICE_URL", default="http://product-service:8000")
-CUSTOMER_SERVICE_URL = config("CUSTOMER_SERVICE_URL", default="http://customer-service:8000")
+USER_SERVICE_URL = config("USER_SERVICE_URL", default="http://user-service:8000")
 ORDER_SERVICE_URL = config("ORDER_SERVICE_URL", default="http://order-service:8000")
 RECOMMENDER_SERVICE_URL = config(
     "RECOMMENDER_SERVICE_URL", default="http://recommender-ai-service:8000"
@@ -134,10 +134,14 @@ def fetch_all_products() -> List[dict]:
 
 
 def fetch_customers() -> List[dict]:
-    data = _get(f"{CUSTOMER_SERVICE_URL}/api/customers/")
-    if not isinstance(data, list):
+    data = _get(f"{USER_SERVICE_URL}/api/users/", params={"role": "CUSTOMER"})
+    if data is None:
         return []
-    return data
+    if isinstance(data, dict):
+        return data.get("results", [])
+    if isinstance(data, list):
+        return data
+    return []
 
 
 def fetch_orders_completed() -> List[dict]:
