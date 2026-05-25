@@ -18,6 +18,9 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
 
 COPY . .
 
+# Create weights directory
+RUN mkdir -p /app/weights
+
 RUN sed -i 's/\r//' entrypoint.sh && chmod +x entrypoint.sh
 
 EXPOSE 8000

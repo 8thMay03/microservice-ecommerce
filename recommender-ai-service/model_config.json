@@ -1,0 +1,102 @@
+{
+  "models": {
+    "rnn": {
+      "name": "Simple RNN",
+      "description": "Basic recurrent neural network for sequence prediction",
+      "architecture": {
+        "embedding_dim": 64,
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "dropout": 0.3
+      },
+      "training": {
+        "learning_rate": 0.001,
+        "batch_size": 64,
+        "epochs": 20,
+        "weight_decay": 1e-5
+      },
+      "use_cases": [
+        "Quick prototyping",
+        "Small datasets",
+        "Fast inference required"
+      ]
+    },
+    "lstm": {
+      "name": "LSTM",
+      "description": "Long Short-Term Memory network with attention mechanism",
+      "architecture": {
+        "embedding_dim": 64,
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "dropout": 0.3
+      },
+      "training": {
+        "learning_rate": 0.001,
+        "batch_size": 64,
+        "epochs": 20,
+        "weight_decay": 1e-5
+      },
+      "use_cases": [
+        "Production systems",
+        "Long sequence dependencies",
+        "Balanced accuracy/speed"
+      ]
+    },
+    "bilstm": {
+      "name": "Bidirectional LSTM",
+      "description": "BiLSTM with attention and batch normalization",
+      "architecture": {
+        "embedding_dim": 64,
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "dropout": 0.3
+      },
+      "training": {
+        "learning_rate": 0.001,
+        "batch_size": 64,
+        "epochs": 20,
+        "weight_decay": 1e-5
+      },
+      "use_cases": [
+        "High accuracy requirements",
+        "Complex behavior patterns",
+        "Large datasets available"
+      ]
+    }
+  },
+  "data": {
+    "seq_length": 10,
+    "min_seq_length": 3,
+    "max_seq_len": 50,
+    "test_size": 0.2,
+    "val_size": 0.1
+  },
+  "actions": {
+    "view": {
+      "weight": 1,
+      "description": "User views a product"
+    },
+    "click": {
+      "weight": 2,
+      "description": "User clicks on a product"
+    },
+    "search": {
+      "weight": 2,
+      "description": "User searches for products"
+    },
+    "add_to_cart": {
+      "weight": 3,
+      "description": "User adds product to cart"
+    },
+    "purchase": {
+      "weight": 5,
+      "description": "User completes purchase"
+    }
+  },
+  "deployment": {
+    "default_model": "bilstm",
+    "cache_models": true,
+    "batch_prediction_limit": 100,
+    "confidence_threshold": 0.5
+  }
+}

@@ -13,8 +13,8 @@ htmlcov/
 venv/
 env/
 
-# Django collected static (should be built in image/runtime)
-staticfiles/
+# Model weights are mounted or baked in at runtime
+weights/*.pt
 
 # Local/editor
 .DS_Store

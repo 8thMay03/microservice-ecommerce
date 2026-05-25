@@ -6,13 +6,8 @@ while ! nc -z "$DB_HOST" "$DB_PORT"; do
 done
 echo "PostgreSQL is ready."
 
-python manage.py makemigrations recommender --noinput
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput
-
-exec gunicorn config.wsgi:application \
-  --bind 0.0.0.0:8000 \
+exec uvicorn main:app \
+  --host 0.0.0.0 \
+  --port 8000 \
   --workers 2 \
-  --timeout 120 \
-  --access-logfile - \
-  --error-logfile -
+  --log-level info

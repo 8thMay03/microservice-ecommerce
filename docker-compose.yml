@@ -249,6 +249,8 @@ services:
 
   pay-service:
     build: ./pay-service
+    volumes:
+      - ./pay-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "pay-secret-key-change-in-prod"
@@ -265,6 +267,8 @@ services:
 
   ship-service:
     build: ./ship-service
+    volumes:
+      - ./ship-service:/app
     environment:
       DEBUG: "True"
       SECRET_KEY: "ship-secret-key-change-in-prod"
@@ -437,6 +441,9 @@ services:
   # ─────────────────────────────────────────────
   frontend:
     build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3000:80"
     depends_on:
@@ -447,6 +454,8 @@ services:
 
   api-gateway:
     build: ./api-gateway
+    volumes:
+      - ./api-gateway:/app
     ports:
       - "8000:8000"
     environment:
