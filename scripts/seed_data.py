@@ -372,10 +372,10 @@ print("Created:", created_count, "Updated:", updated_count)
 def seed_admin():
     print("3. Creating admin account (admin@store.com / " + DEFAULT_PASSWORD + ")...")
     code = """
-from management.models import ManagerUser
-u, created = ManagerUser.objects.get_or_create(
+from users.models import User
+u, created = User.objects.get_or_create(
     email="admin@store.com",
-    defaults={"first_name": "Admin", "last_name": "Manager", "is_active": True}
+    defaults={"first_name": "Admin", "last_name": "Manager", "role": "MANAGER", "is_admin": True, "is_staff_flag": True, "is_active": True}
 )
 if created:
     u.set_password("Password123!")
@@ -384,16 +384,16 @@ if created:
 else:
     print("Admin already exists")
 """
-    return run_exec("manager-service", code, timeout=120)
+    return run_exec("user-service", code, timeout=120)
 
 
 def seed_staff():
     print("4. Creating staff account (staff@store.com / " + DEFAULT_PASSWORD + ")...")
     code = """
-from staff.models import StaffMember
-u, created = StaffMember.objects.get_or_create(
+from users.models import User
+u, created = User.objects.get_or_create(
     email="staff@store.com",
-    defaults={"first_name": "Staff", "last_name": "User", "role": "SALES", "is_admin": True, "is_active": True}
+    defaults={"first_name": "Staff", "last_name": "User", "role": "STAFF", "staff_role": "SALES", "is_admin": True, "is_staff_flag": True, "is_active": True}
 )
 if created:
     u.set_password("Password123!")
@@ -402,7 +402,7 @@ if created:
 else:
     print("Staff already exists")
 """
-    return run_exec("staff-service", code, timeout=120)
+    return run_exec("user-service", code, timeout=120)
 
 
 def seed_customers():
@@ -416,20 +416,20 @@ def seed_customers():
         chunk = CUSTOMERS[start : start + batch_size]
         customers_json = json.dumps(chunk)
         code = f"""
-from customers.models import Customer
+from users.models import User
 import json
 data = json.loads('''{customers_json}''')
 for d in data:
-    u, created = Customer.objects.get_or_create(
+    u, created = User.objects.get_or_create(
         email=d["email"],
-        defaults={{"first_name": d["first_name"], "last_name": d["last_name"], "phone": d.get("phone", ""), "address": d.get("address", ""), "is_active": True}}
+        defaults={{"first_name": d["first_name"], "last_name": d["last_name"], "role": "CUSTOMER", "phone": d.get("phone", ""), "address": d.get("address", ""), "is_active": True}}
     )
     if created:
         u.set_password("Password123!")
         u.save()
-print("Batch done; total customers:", Customer.objects.count())
+print("Batch done; total customers:", User.objects.filter(role="CUSTOMER").count())
 """
-        if not run_exec("customer-service", code, timeout=300):
+        if not run_exec("user-service", code, timeout=300):
             return False
     return True
 

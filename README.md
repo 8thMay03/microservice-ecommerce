@@ -18,21 +18,21 @@ Hệ thống bao gồm ứng dụng Client (Frontend web UI), một API Gateway 
 graph TD
     Client[📱 Client / Browser] -->|HTTP :3000| Frontend[🌐 React Frontend]
     Client -->|HTTP :8000| Gateway[🚪 API Gateway]
-    
-    Gateway -->|/api/customers| CUS[👤 Customer Service :8001]
-    Gateway -->|/api/products| PRO[📦 Product Service :8002]
-    Gateway -->|/api/catalog| CAT[🏷️ Catalog Service :8003]
-    Gateway -->|/api/cart| CRT[🛒 Cart Service :8004]
-    Gateway -->|/api/orders| ORD[🧾 Order Service :8005]
-    Gateway -->|/api/payments| PAY[💳 Pay Service :8006]
-    Gateway -->|/api/shipments| SHP[🚚 Ship Service :8007]
-    Gateway -->|/api/reviews| REV[⭐ Comment & Rate Service :8008]
-    Gateway -->|/api/recommendations| REC[🤖 Recommender AI Service :8009]
-    Gateway -->|/api/staff| STF[👨‍💼 Staff Service :8010]
-    Gateway -->|/api/managers| MNG[📈 Manager Service :8011]
-    Gateway -->|/api/rag| RAG[💬 RAG Chat Service :8012]
 
-    CUS --> DB1[(Customer DB)]
+    Gateway -->|/api/auth| AUTH[🔐 Auth Service]
+    Gateway -->|/api/users| USR[👤 User Service]
+    Gateway -->|/api/products| PRO[📦 Product Service]
+    Gateway -->|/api/catalog| CAT[🏷️ Catalog Service]
+    Gateway -->|/api/cart| CRT[🛒 Cart Service]
+    Gateway -->|/api/orders| ORD[🧾 Order Service]
+    Gateway -->|/api/payments| PAY[💳 Pay Service]
+    Gateway -->|/api/shipments| SHP[🚚 Ship Service]
+    Gateway -->|/api/reviews| REV[⭐ Comment & Rate Service]
+    Gateway -->|/api/recommendations| REC[🤖 Recommender AI Service]
+    Gateway -->|/api/rag| RAG[💬 RAG Chat Service]
+
+    AUTH --> USERDB[(User DB)]
+    USR --> USERDB
     PRO --> DB2[(Product DB)]
     CAT --> DB3[(Catalog DB)]
     CRT --> DB4[(Cart DB)]
@@ -41,8 +41,6 @@ graph TD
     SHP --> DB7[(Ship DB)]
     REV --> DB8[(Review DB)]
     REC --> DB9[(Recommend DB)]
-    STF --> DB10[(Staff DB)]
-    MNG --> DB11[(Manager DB)]
 ```
 
 ---
@@ -60,7 +58,8 @@ Mỗi service (ngoại trừ `rag-service`) đều liên kết độc quyền v�
 
 | Service | Vai trò & Chức năng (Role) | Database Container |
 |---------|------------------|----------|
-| `customer-service` | Quản lý khách hàng, đăng nhập, phân quyền | `customer-db` |
+| `auth-service` | Xác thực người dùng (Login / Register / JWT) | `user-db` (dùng chung) |
+| `user-service` | Quản lý người dùng (Customer / Staff / Manager), báo cáo | `user-db` |
 | `product-service` | Quản lý thông tin Sách & Tồn kho | `product-db` |
 | `catalog-service` | Quản lý Cây danh mục (Categories) | `catalog-db` |
 | `cart-service` | Quản lý Giỏ hàng của người dùng | `cart-db` |
@@ -69,8 +68,6 @@ Mỗi service (ngoại trừ `rag-service`) đều liên kết độc quyền v�
 | `ship-service` | Quản lý vận chuyển & Mã tracking theo dõi | `ship-db` |
 | `comment-rate-service` | Nhận xét, đánh giá sản phẩm | `comment-rate-db` |
 | `recommender-ai-service`| Đề xuất SP (AI Collaborative Filtering) | `recommender-db` |
-| `staff-service` | Quản lý Nhân sự & Phân quyền nội bộ | `staff-db` |
-| `manager-service` | Báo cáo doanh thu, Thống kê Quản trị | `manager-db` |
 | `rag-service` | RAG Chatbot (Sử dụng LLM) tìm hiểu sách | Không dùng CSDL riêng |
 
 ---
@@ -137,7 +134,8 @@ Mọi request Web/Mobile gọi tới hệ thống thông qua Entrypoint duy nh�
 
 | Tiền tố đường dẫn (Prefix) | Trỏ đến Service | Yêu cầu xác thực |
 |--------|---------------|------------------|
-| `/api/customers/...` | `customer-service` | Login/Profile/Register |
+| `/api/auth/...` | `auth-service` | Login / Register / JWT Refresh |
+| `/api/users/...` | `user-service` | Profile / Admin CRUD / Báo cáo |
 | `/api/products/...` | `product-service` | Public - Get/List |
 | `/api/catalog/...` | `catalog-service` | Public |
 | `/api/cart/...` | `cart-service` | Thường kết hợp Customer ID |
@@ -146,8 +144,6 @@ Mọi request Web/Mobile gọi tới hệ thống thông qua Entrypoint duy nh�
 | `/api/shipments/...` | `ship-service` | - |
 | `/api/reviews/...` | `comment-rate-service` | Cần xác thực Customer |
 | `/api/recommendations/...`| `recommender-ai-service`| Lấy theo Customer ID |
-| `/api/staff/...` | `staff-service` | User đăng nhập Staff |
-| `/api/managers/...` | `manager-service` | User đăng nhập Manager |
 | `/api/rag/chat` | `rag-service` | Endpoint Post chat JSON |
 
 </details>
@@ -163,7 +159,8 @@ microservice-bookstore/
 ├── 🌍 frontend/                # React App Source
 ├── 🚪 api-gateway/             # Config Gateway định tuyến 
 ├── 📦 product-service/         # App quản trị Sản phẩm (Django)
-├── 👤 customer-service/        # App quản trị Auth Khách (Django)
+├── 🔐 auth-service/             # Xác thực JWT
+├── 👤 user-service/             # Quản lý người dùng thống nhất
 ├── 🤖 recommender-ai-service/  # Source Engine ML/Collaborative Filter
 ├── ... (Các Microservices Back-end khác tương tự)
 └── 📜 scripts/                 # Công cụ CLI (Seed data, Setup)
