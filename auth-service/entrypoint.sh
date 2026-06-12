@@ -6,7 +6,30 @@ while ! nc -z "$DB_HOST" "$DB_PORT"; do
 done
 echo "PostgreSQL is ready."
 
-python manage.py migrate --noinput
+echo "Waiting for users table..."
+while ! python - <<'PY'
+import os
+import psycopg2
+
+try:
+    conn = psycopg2.connect(
+        dbname=os.environ["DB_NAME"],
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        host=os.environ["DB_HOST"],
+        port=os.environ["DB_PORT"],
+    )
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT to_regclass('public.users')")
+        raise SystemExit(0 if cursor.fetchone()[0] else 1)
+except Exception:
+    raise SystemExit(1)
+PY
+do
+  sleep 0.2
+done
+echo "Users table is ready."
+
 python manage.py collectstatic --noinput
 
 exec gunicorn config.wsgi:application \

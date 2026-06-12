@@ -14,6 +14,7 @@ import requests
 from requests.exceptions import RequestException
 
 from django.conf import settings
+from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -44,7 +45,7 @@ class GatewayProxyView(APIView):
     def dispatch(self, request, service: str, path: str = "", *args, **kwargs):
         registry = settings.SERVICE_REGISTRY
         if service not in registry:
-            return Response(
+            return JsonResponse(
                 {"error": f"Unknown service: '{service}'"},
                 status=status.HTTP_404_NOT_FOUND,
             )
