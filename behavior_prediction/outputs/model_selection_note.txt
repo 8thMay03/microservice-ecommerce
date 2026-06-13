@@ -1,0 +1,5 @@
+Model duoc chon: bilstm
+Ly do: macro F1 tren tap test cao nhat (0.2572), phu hop hon accuracy khi cac lop hanh vi bi lech.
+Do chinh xac: 0.2959; precision macro: 0.2617; recall macro: 0.2614; weighted F1: 0.3055.
+So voi mo hinh dung thu hai (rnn), macro F1 chenh 0.0167.
+Nhan xet: Neu confusion matrix con nham nhieu o lop it mau, nen tang du lieu, thu them feature thoi gian, hoac tinh chinh class weight/sequence_length.

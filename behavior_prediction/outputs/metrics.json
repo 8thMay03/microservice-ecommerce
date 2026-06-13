@@ -1,0 +1,173 @@
+{
+  "data_path": "D:\\Github Repositories\\microservice-bookstore\\behavior-data\\data_user500.csv",
+  "sequence_length": 5,
+  "split": {
+    "train_users": 350,
+    "val_users": 75,
+    "test_users": 75,
+    "train_samples": 7950,
+    "val_samples": 1695,
+    "test_samples": 1602
+  },
+  "results": [
+    {
+      "name": "rnn",
+      "accuracy": 0.2546816479400749,
+      "precision_macro": 0.26361386650427776,
+      "recall_macro": 0.2647386601450771,
+      "f1_macro": 0.24050163418461978,
+      "f1_weighted": 0.269525043378637,
+      "best_val_f1_macro": 0.238300787365838,
+      "epochs_trained": 13
+    },
+    {
+      "name": "lstm",
+      "accuracy": 0.26841448189762795,
+      "precision_macro": 0.25216789677454465,
+      "recall_macro": 0.2518838364616738,
+      "f1_macro": 0.2393994281999277,
+      "f1_weighted": 0.2752023533693015,
+      "best_val_f1_macro": 0.24793645584489704,
+      "epochs_trained": 10
+    },
+    {
+      "name": "bilstm",
+      "accuracy": 0.2958801498127341,
+      "precision_macro": 0.2616996780403205,
+      "recall_macro": 0.2614237979453831,
+      "f1_macro": 0.2572420720612585,
+      "f1_weighted": 0.30554826298682136,
+      "best_val_f1_macro": 0.26270629128550066,
+      "epochs_trained": 30
+    }
+  ],
+  "classification_reports": {
+    "rnn": {
+      "add to cart": {
+        "precision": 0.20507399577167018,
+        "recall": 0.3190789473684211,
+        "f1-score": 0.24967824967824967,
+        "support": 304.0
+      },
+      "click": {
+        "precision": 0.24475524475524477,
+        "recall": 0.17721518987341772,
+        "f1-score": 0.2055800293685756,
+        "support": 395.0
+      },
+      "purchase": {
+        "precision": 0.11764705882352941,
+        "recall": 0.3050847457627119,
+        "f1-score": 0.16981132075471697,
+        "support": 177.0
+      },
+      "view": {
+        "precision": 0.4869791666666667,
+        "recall": 0.25757575757575757,
+        "f1-score": 0.33693693693693694,
+        "support": 726.0
+      },
+      "accuracy": 0.2546816479400749,
+      "macro avg": {
+        "precision": 0.26361386650427776,
+        "recall": 0.2647386601450771,
+        "f1-score": 0.24050163418461978,
+        "support": 1602.0
+      },
+      "weighted avg": {
+        "precision": 0.33295332135123223,
+        "recall": 0.2546816479400749,
+        "f1-score": 0.269525043378637,
+        "support": 1602.0
+      }
+    },
+    "lstm": {
+      "add to cart": {
+        "precision": 0.17485265225933203,
+        "recall": 0.29276315789473684,
+        "f1-score": 0.21894218942189422,
+        "support": 304.0
+      },
+      "click": {
+        "precision": 0.27360308285163776,
+        "recall": 0.3594936708860759,
+        "f1-score": 0.31072210065645517,
+        "support": 395.0
+      },
+      "purchase": {
+        "precision": 0.10795454545454546,
+        "recall": 0.10734463276836158,
+        "f1-score": 0.10764872521246459,
+        "support": 177.0
+      },
+      "view": {
+        "precision": 0.45226130653266333,
+        "recall": 0.24793388429752067,
+        "f1-score": 0.3202846975088968,
+        "support": 726.0
+      },
+      "accuracy": 0.26841448189762795,
+      "macro avg": {
+        "precision": 0.25216789677454465,
+        "recall": 0.2518838364616738,
+        "f1-score": 0.2393994281999277,
+        "support": 1602.0
+      },
+      "weighted avg": {
+        "precision": 0.317526895818603,
+        "recall": 0.26841448189762795,
+        "f1-score": 0.2752023533693015,
+        "support": 1602.0
+      }
+    },
+    "bilstm": {
+      "add to cart": {
+        "precision": 0.18409090909090908,
+        "recall": 0.26644736842105265,
+        "f1-score": 0.21774193548387097,
+        "support": 304.0
+      },
+      "click": {
+        "precision": 0.2768878718535469,
+        "recall": 0.30632911392405066,
+        "f1-score": 0.29086538461538464,
+        "support": 395.0
+      },
+      "purchase": {
+        "precision": 0.12299465240641712,
+        "recall": 0.12994350282485875,
+        "f1-score": 0.12637362637362637,
+        "support": 177.0
+      },
+      "view": {
+        "precision": 0.4628252788104089,
+        "recall": 0.34297520661157027,
+        "f1-score": 0.3939873417721519,
+        "support": 726.0
+      },
+      "accuracy": 0.2958801498127341,
+      "macro avg": {
+        "precision": 0.2616996780403205,
+        "recall": 0.2614237979453831,
+        "f1-score": 0.2572420720612585,
+        "support": 1602.0
+      },
+      "weighted avg": {
+        "precision": 0.32653904596634215,
+        "recall": 0.2958801498127341,
+        "f1-score": 0.30554826298682136,
+        "support": 1602.0
+      }
+    }
+  },
+  "best_model": {
+    "name": "bilstm",
+    "accuracy": 0.2958801498127341,
+    "precision_macro": 0.2616996780403205,
+    "recall_macro": 0.2614237979453831,
+    "f1_macro": 0.2572420720612585,
+    "f1_weighted": 0.30554826298682136,
+    "best_val_f1_macro": 0.26270629128550066,
+    "epochs_trained": 30
+  }
+}
