@@ -5,7 +5,7 @@ import random
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
@@ -437,8 +437,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+def run_training(model_names: Sequence[str], args: Optional[argparse.Namespace] = None) -> None:
+    if args is None:
+        args = parse_args()
     set_seed(args.seed)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -474,7 +475,7 @@ def main() -> None:
     print(f"Actions: {', '.join(id_to_action[index] for index in sorted(id_to_action))}")
 
     criterion_for_eval = nn.CrossEntropyLoss(weight=class_weights.to(device))
-    for model_name in ["rnn", "lstm", "bilstm"]:
+    for model_name in model_names:
         print(f"\nTraining {model_name}...")
         model, history, best_val_f1 = train_model(
             model_name=model_name,
@@ -558,6 +559,10 @@ def main() -> None:
     print("\nBest model:", best_result.name)
     print(build_selection_note(best_result, results))
     print(f"\nSaved outputs to: {args.output_dir}")
+
+
+def main() -> None:
+    run_training(["rnn", "lstm", "bilstm"])
 
 
 if __name__ == "__main__":

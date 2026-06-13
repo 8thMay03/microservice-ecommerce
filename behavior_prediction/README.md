@@ -9,6 +9,14 @@ Thu muc nay train 3 mo hinh recurrent de du doan hanh vi tiep theo cua user:
 File `train_behavior_models.py` dung de tien xu ly du lieu, train, danh gia, chon `model_best`
 va xuat visualization.
 
+Neu muon train tung mo hinh rieng:
+
+```powershell
+python behavior_prediction/train_rnn.py
+python behavior_prediction/train_lstm.py
+python behavior_prediction/train_bilstm.py
+```
+
 Du lieu mac dinh: `../behavior-data/data_user500.csv`
 
 ## Cach chay
