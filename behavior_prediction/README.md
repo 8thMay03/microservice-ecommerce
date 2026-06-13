@@ -17,6 +17,9 @@ python behavior_prediction/train_lstm.py
 python behavior_prediction/train_bilstm.py
 ```
 
+Ba file train rieng o tren la script doc lap, khong import hay ke thua tu `train_behavior_models.py`.
+Moi file tu xu ly du lieu, train, evaluate, luu checkpoint, metrics va plots cho dung mo hinh cua no.
+
 Du lieu mac dinh: `../behavior-data/data_user500.csv`
 
 ## Cach chay
