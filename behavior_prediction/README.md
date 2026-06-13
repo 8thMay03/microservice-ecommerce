@@ -33,8 +33,10 @@ Tat ca ket qua nam trong `behavior_prediction/outputs`:
 - `model_selection_note.txt`: danh gia bang loi va ly do chon model tot nhat.
 - `training_f1.png`: qua trinh train/validation macro F1.
 - `training_loss.png`: qua trinh train/validation loss.
+- `rnn_loss.png`, `lstm_loss.png`, `bilstm_loss.png`: train_loss va val_loss rieng cua tung model.
 - `model_comparison.png`: so sanh cac metric cua 3 mo hinh.
 - `best_confusion_matrix.png`: confusion matrix cua model tot nhat.
+- `rnn_confusion_matrix.png`, `lstm_confusion_matrix.png`, `bilstm_confusion_matrix.png`: confusion matrix rieng cua tung model.
 
 ## Cach danh gia
 

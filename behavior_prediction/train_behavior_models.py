@@ -309,8 +309,7 @@ def save_plots(
     histories: Dict[str, Dict[str, List[float]]],
     results: Sequence[ModelResult],
     best_name: str,
-    y_true: Sequence[int],
-    y_pred: Sequence[int],
+    predictions_by_model: Dict[str, Tuple[List[int], List[int]]],
     labels: Sequence[str],
 ) -> None:
     import matplotlib.pyplot as plt
@@ -343,6 +342,19 @@ def save_plots(
     plt.savefig(output_dir / "training_loss.png", dpi=160)
     plt.close()
 
+    for model_name, history in histories.items():
+        epochs = range(1, len(history["val_loss"]) + 1)
+        plt.figure(figsize=(8, 5))
+        plt.plot(epochs, history["train_loss"], marker="o", label="train_loss")
+        plt.plot(epochs, history["val_loss"], marker="o", label="val_loss")
+        plt.title(f"Train/Validation Loss - {model_name}")
+        plt.xlabel("Epoch")
+        plt.ylabel("Cross entropy loss")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(output_dir / f"{model_name}_loss.png", dpi=160)
+        plt.close()
+
     metric_names = ["accuracy", "precision_macro", "recall_macro", "f1_macro", "f1_weighted"]
     x = np.arange(len(metric_names))
     width = 0.24
@@ -359,21 +371,27 @@ def save_plots(
     plt.savefig(output_dir / "model_comparison.png", dpi=160)
     plt.close()
 
-    cm = confusion_matrix(y_true, y_pred, labels=list(range(len(labels))))
-    plt.figure(figsize=(7, 6))
-    plt.imshow(cm, cmap="Blues")
-    plt.title(f"Confusion matrix - {best_name}")
-    plt.xlabel("Predicted label")
-    plt.ylabel("True label")
-    plt.xticks(range(len(labels)), labels, rotation=30, ha="right")
-    plt.yticks(range(len(labels)), labels)
-    for row in range(cm.shape[0]):
-        for col in range(cm.shape[1]):
-            plt.text(col, row, str(cm[row, col]), ha="center", va="center", color="black")
-    plt.colorbar()
-    plt.tight_layout()
-    plt.savefig(output_dir / "best_confusion_matrix.png", dpi=160)
-    plt.close()
+    for model_name, (y_true, y_pred) in predictions_by_model.items():
+        cm = confusion_matrix(y_true, y_pred, labels=list(range(len(labels))))
+        plt.figure(figsize=(7, 6))
+        plt.imshow(cm, cmap="Blues")
+        title = f"Confusion matrix - {model_name}"
+        if model_name == best_name:
+            title += " (best)"
+        plt.title(title)
+        plt.xlabel("Predicted label")
+        plt.ylabel("True label")
+        plt.xticks(range(len(labels)), labels, rotation=30, ha="right")
+        plt.yticks(range(len(labels)), labels)
+        for row in range(cm.shape[0]):
+            for col in range(cm.shape[1]):
+                plt.text(col, row, str(cm[row, col]), ha="center", va="center", color="black")
+        plt.colorbar()
+        plt.tight_layout()
+        plt.savefig(output_dir / f"{model_name}_confusion_matrix.png", dpi=160)
+        if model_name == best_name:
+            plt.savefig(output_dir / "best_confusion_matrix.png", dpi=160)
+        plt.close()
 
 
 def build_selection_note(best: ModelResult, all_results: Sequence[ModelResult]) -> str:
@@ -491,7 +509,6 @@ def main() -> None:
 
     best_result = max(results, key=lambda item: item.f1_macro)
     best_model = trained_models[best_result.name]
-    best_y_true, best_y_pred = predictions_by_model[best_result.name]
     label_names = [id_to_action[index] for index in sorted(id_to_action)]
 
     torch.save(
@@ -536,7 +553,7 @@ def main() -> None:
         build_selection_note(best_result, results),
         encoding="utf-8",
     )
-    save_plots(args.output_dir, histories, results, best_result.name, best_y_true, best_y_pred, label_names)
+    save_plots(args.output_dir, histories, results, best_result.name, predictions_by_model, label_names)
 
     print("\nBest model:", best_result.name)
     print(build_selection_note(best_result, results))
