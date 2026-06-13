@@ -30,7 +30,7 @@ def _row_to_schema(row: UserBehavior) -> BehaviorEventResponse:
         action=row.action.value if isinstance(row.action, UserAction) else str(row.action),
         product_id=row.product_id,
         timestamp=row.timestamp.isoformat() if row.timestamp else "",
-        metadata=row.metadata,
+        metadata=row.metadata_,
     )
 
 
@@ -93,7 +93,7 @@ async def record_behavior(
         user_id=payload.user_id,
         action=action,
         product_id=payload.product_id,
-        metadata=payload.metadata,
+        metadata_=payload.metadata,
         **({"timestamp": ts} if ts is not None else {}),
     )
     db.add(event)

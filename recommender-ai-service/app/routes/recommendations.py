@@ -83,8 +83,7 @@ async def get_customer_recommendations(
 ):
     """
     Returns a ranked list of recommended products for a customer.
-    Uses behavior_dl (Neural CF) when a trained checkpoint exists; otherwise
-    collaborative filtering; then popularity for cold users.
+    Uses collaborative filtering, then popularity for cold users.
     """
     if not refresh:
         cached_result = await db.execute(

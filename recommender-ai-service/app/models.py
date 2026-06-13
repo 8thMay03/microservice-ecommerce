@@ -70,4 +70,4 @@ class UserBehavior(Base):
         nullable=False,
         index=True,
     )
-    metadata = Column(String(500), nullable=True)
+    metadata_ = Column("metadata", String(500), nullable=True)

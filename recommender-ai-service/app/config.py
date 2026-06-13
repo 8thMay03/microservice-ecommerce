@@ -37,15 +37,6 @@ COMMENT_RATE_SERVICE_URL: str = config(
     "COMMENT_RATE_SERVICE_URL", default="http://comment-rate-service:8000"
 )
 
-# ── Deep-learning behavior model ─────────────────────────────────────────────
-BEHAVIOR_MODEL_PATH: str = config(
-    "BEHAVIOR_MODEL_PATH",
-    default=str(BASE_DIR / "weights" / "behavior_model.pt"),
-)
-BEHAVIOR_DL_ENABLED: bool = config("BEHAVIOR_DL_ENABLED", default=True, cast=bool)
-# cpu | cuda | cuda:0 | mps | auto (CUDA then MPS then CPU)
-BEHAVIOR_TORCH_DEVICE: str = config("BEHAVIOR_TORCH_DEVICE", default="auto")
-
 # ── Server ───────────────────────────────────────────────────────────────────
 DEBUG: bool = config("DEBUG", default=True, cast=bool)
 CORS_ALLOW_ALL_ORIGINS: bool = True

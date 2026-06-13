@@ -11,7 +11,7 @@ Strategy 2 — Popularity Fallback:
 """
 import logging
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Tuple
 
 import httpx
 
@@ -35,19 +35,6 @@ def _fetch_all_orders() -> List[dict]:
         return [o for o in orders if o.get("status") in completed]
     except httpx.RequestError as exc:
         logger.error("Failed to fetch orders: %s", exc)
-        return []
-
-
-def _fetch_customer_orders(customer_id: int) -> List[dict]:
-    try:
-        resp = httpx.get(
-            f"{settings.ORDER_SERVICE_URL}/internal/orders/customer/{customer_id}/history/",
-            timeout=5.0,
-        )
-        resp.raise_for_status()
-        return resp.json()
-    except httpx.RequestError as exc:
-        logger.error("Failed to fetch orders for customer %s: %s", customer_id, exc)
         return []
 
 
@@ -158,38 +145,6 @@ def _apply_category_preference(
     return [(pid, s / max_score) for pid, s in boosted]
 
 
-def _deep_learning_recommendations(
-    customer_id: int, limit: int
-) -> Optional[List[Tuple[int, float]]]:
-    """Neural CF (model_behavior) over completed orders; None if no checkpoint."""
-    from app import model_behavior as mb
-
-    purchased: Set[int] = set()
-    for order in _fetch_customer_orders(customer_id):
-        for item in order.get("items", []):
-            purchased.add(item["product_id"])
-
-    pool = max(limit * 5, 20)
-    raw = mb.recommend_from_behavior_model(customer_id, purchased, pool)
-    if not raw:
-        return None
-
-    max_score = max(s for _, s in raw) or 1.0
-    normalized = [(product_id, s / max_score) for product_id, s in raw]
-
-    all_orders = _fetch_all_orders()
-    customer_products: dict = defaultdict(set)
-    for order in all_orders:
-        cid = order.get("customer_id")
-        for item in order.get("items", []):
-            customer_products[cid].add(item["product_id"])
-
-    boosted = _apply_rating_boost(normalized)
-    boosted = _apply_category_preference(customer_id, boosted, customer_products)
-    boosted.sort(key=lambda x: x[1], reverse=True)
-    return boosted[:limit]
-
-
 def popularity_based(limit: int = 10) -> List[Tuple[int, float]]:
     """Return (product_id, score) tuples ranked by purchase frequency, boosted by rating."""
     orders = _fetch_all_orders()
@@ -270,13 +225,8 @@ def get_recommendations(
     customer_id: int, limit: int = 10
 ) -> Tuple[List[Tuple[int, float]], str]:
     """
-    Prefer trained behavior_dl checkpoint when available; else collaborative
-    filtering; else popularity. Returns (ranked list, strategy name).
+    Prefer collaborative filtering; else popularity. Returns (ranked list, strategy name).
     """
-    dl = _deep_learning_recommendations(customer_id, limit)
-    if dl:
-        return dl, "behavior_dl"
-
     results = collaborative_filtering(customer_id, limit)
     if not results:
         return popularity_based(limit), "popularity"

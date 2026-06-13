@@ -12,7 +12,7 @@ Environment (docker-compose / local)
 ------------------------------------
   NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
   CATALOG_SERVICE_URL, PRODUCT_SERVICE_URL
-  Optional: CUSTOMER_SERVICE_URL, ORDER_SERVICE_URL, RECOMMENDER_SERVICE_URL
+  Optional: CUSTOMER_SERVICE_URL, USER_SERVICE_URL, ORDER_SERVICE_URL, RECOMMENDER_SERVICE_URL
 """
 from __future__ import annotations
 
@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 CATALOG_SERVICE_URL = config("CATALOG_SERVICE_URL", default="http://catalog-service:8000")
 PRODUCT_SERVICE_URL = config("PRODUCT_SERVICE_URL", default="http://product-service:8000")
 USER_SERVICE_URL = config("USER_SERVICE_URL", default="http://user-service:8000")
+CUSTOMER_SERVICE_URL = config("CUSTOMER_SERVICE_URL", default="http://customer-service:8000")
 ORDER_SERVICE_URL = config("ORDER_SERVICE_URL", default="http://order-service:8000")
 RECOMMENDER_SERVICE_URL = config(
     "RECOMMENDER_SERVICE_URL", default="http://recommender-ai-service:8000"
@@ -135,12 +136,17 @@ def fetch_all_products() -> List[dict]:
 
 def fetch_customers() -> List[dict]:
     data = _get(f"{USER_SERVICE_URL}/api/users/", params={"role": "CUSTOMER"})
-    if data is None:
-        return []
     if isinstance(data, dict):
-        return data.get("results", [])
+        rows = data.get("results", [])
+        if rows:
+            return rows
     if isinstance(data, list):
         return data
+    legacy = _get(f"{CUSTOMER_SERVICE_URL}/api/customers/")
+    if isinstance(legacy, dict):
+        return legacy.get("results") or legacy.get("value") or []
+    if isinstance(legacy, list):
+        return legacy
     return []
 
 
@@ -152,9 +158,7 @@ def fetch_orders_completed() -> List[dict]:
 
 
 def fetch_behavior_events() -> List[dict]:
-    data = _get(
-        f"{RECOMMENDER_SERVICE_URL}/internal/recommender/behavior-events/"
-    )
+    data = _get(f"{RECOMMENDER_SERVICE_URL}/internal/recommender/behavior-events/")
     if not isinstance(data, list):
         return []
     return data
@@ -308,7 +312,9 @@ class GraphBuilder:
 
         rel_map = {
             "view": "VIEWED",
+            "view_product": "VIEWED",
             "click": "CLICKED",
+            "click_product": "CLICKED",
             "add_to_cart": "ADDED_TO_CART",
         }
         counts: Dict[tuple, int] = defaultdict(int)
